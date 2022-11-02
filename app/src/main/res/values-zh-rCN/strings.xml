@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="navigation_drawer_open">打开导航抽屉</string>
+    <string name="navigation_drawer_close">关闭导航抽屉</string>
+    <string name="nav_header_desc">导航标题</string>
+    <string name="action_settings">设置</string>
+    <string name="message_env">当前管理的应用程序：</string>
+    <string name="module">模块</string>
+    <string name="text_yourDevice">设备</string>
+    <string name="drawer">导航</string>
+    <string name="menu">菜单</string>
+    <string name="sheet">主页</string>
+    <string name="apps">应用</string>
+    <string name="select">选择</string>
+    <string name="power">电源</string>
+    <string name="start">启动</string>
+    <string name="stop">停止</string>
+    <string name="current_time">当前时间</string>
+    <string name="console">控制台</string>
+    <string name="target_application">目标应用</string>
+    <string name="time_of_running">运行时长</string>
+    <string name="zero">归零</string>
+    <string name="device_info">设备信息</string>
+    <string name="title_select_app">选择应用</string>
+    <string name="title_launcher_settings">桌面设置</string>
+    <string name="title_selected">选定的应用程序</string>
+    <string name="error_could_not_start">不支持的应用程序。</string>
+    <string name="btf">优先从后台切换到前台</string>
+    <string name="act">每次都重新打开应用Activity</string>
+    <string name="mode">选择工作模式</string>
+</resources>

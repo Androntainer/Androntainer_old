@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextClock
+        android:id="@+id/textClock_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:format12Hour="hh:mm"
+        android:format24Hour="HH:mm"
+        android:gravity="center"
+        android:text="@string/hhmm"
+        android:textColor="#616161"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextClock
+        android:id="@+id/textClock_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:format12Hour="yyyy/MM/dd E"
+        android:format24Hour="yyyy/MM/dd E"
+        android:gravity="center"
+        android:text="@string/yyyymmdde"
+        android:textColor="#616161"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textClock_time" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

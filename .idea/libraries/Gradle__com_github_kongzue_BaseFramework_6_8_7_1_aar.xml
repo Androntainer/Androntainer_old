@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.kongzue:BaseFramework:6.8.7.1@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.kongzue/BaseFramework/6.8.7.1/b56b224574e189f32107943288c5539cf72e9fbd/BaseFramework-6.8.7.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

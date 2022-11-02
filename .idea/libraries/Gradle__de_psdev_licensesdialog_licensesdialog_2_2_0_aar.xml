@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Gradle: de.psdev.licensesdialog:licensesdialog:2.2.0@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9e3d8250d61a5e3cea4732abd7dee1cf/transformed/licensesdialog-2.2.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9e3d8250d61a5e3cea4732abd7dee1cf/transformed/licensesdialog-2.2.0/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/9e3d8250d61a5e3cea4732abd7dee1cf/transformed/licensesdialog-2.2.0/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/de.psdev.licensesdialog/licensesdialog/2.2.0/d7bebbd9208634525effb1d374294a08eb6824fb/licensesdialog-2.2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
