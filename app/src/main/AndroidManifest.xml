@@ -11,7 +11,7 @@
         tools:ignore="QueryAllPackagesPermission" /><!-- 获取所有软件包 -->
 
     <application
-        android:name=".application.app.Androntainer"
+        android:name=".Androntainer"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:extractNativeLibs="true"
@@ -29,7 +29,7 @@
             android:value="@string/fake_signature" />
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Androntainer">
             <intent-filter>
@@ -39,14 +39,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".application.google.Google"
+            android:name=".Google"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".application.fixedplay.Launcher"
+            android:name=".Launcher"
             android:exported="false" />
         <activity
             android:name=".application.fixedplay.App.SelectOne"
@@ -68,7 +68,7 @@
         </activity>
 
         <service
-            android:name=".service.BillingService"
+            android:name=".InAppBillingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.android.vending.billing.InAppBillingService.BIND" />
