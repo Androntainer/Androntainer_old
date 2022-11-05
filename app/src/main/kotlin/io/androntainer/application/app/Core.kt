@@ -6,6 +6,7 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.provider.Settings
@@ -14,9 +15,11 @@ import androidx.preference.PreferenceManager
 import com.farmerbb.taskbar.lib.Taskbar
 import com.google.android.material.color.DynamicColors
 import com.kongzue.dialogx.DialogX
+import com.kongzue.dialogx.style.IOSStyle
 import io.androntainer.R
 import io.androntainer.application.fixedplay.Launcher
 import io.androntainer.ui.activity.ActivityMain
+
 
 /**
  * init
@@ -33,6 +36,15 @@ fun initDynamicColors(application: Application){
 
 fun initDialogX(application: Application){
     DialogX.init(application)
+    DialogX.globalStyle = IOSStyle()
+    DialogX.globalTheme = DialogX.THEME.AUTO
+    DialogX.autoShowInputKeyboard = true
+    DialogX.onlyOnePopTip = false
+    DialogX.cancelable = true
+    DialogX.cancelableTipDialog = false
+    DialogX.bottomDialogNavbarColor = Color.TRANSPARENT
+    DialogX.autoRunOnUIThread = false
+    DialogX.useHaptic = true
 }
 
 fun initTaskbar(application: Application){

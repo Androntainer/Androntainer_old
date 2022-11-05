@@ -6,6 +6,7 @@ class Androntainer : AndrontainerApplication() {
 
     override fun initSdk() {
         initDynamicColors(this@Androntainer)
+        initDialogX(this@Androntainer)
         initTaskbar(this@Androntainer)
     }
 }

@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="Gradle: com.github.kongzue.DialogX:DialogX:0.0.47.beta1@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1d8eaa137c01da47fd7b29759a7335cf/transformed/DialogX-0.0.47.beta1/jars/classes.jar!/" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1d8eaa137c01da47fd7b29759a7335cf/transformed/DialogX-0.0.47.beta1/jars/libs/DialogXInterface.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1d8eaa137c01da47fd7b29759a7335cf/transformed/DialogX-0.0.47.beta1/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1d8eaa137c01da47fd7b29759a7335cf/transformed/DialogX-0.0.47.beta1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/b4ea719ddbf80be0c2a09c42596a6e2e/transformed/DialogX-0.0.47.beta1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/b4ea719ddbf80be0c2a09c42596a6e2e/transformed/DialogX-0.0.47.beta1/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/b4ea719ddbf80be0c2a09c42596a6e2e/transformed/DialogX-0.0.47.beta1/jars/libs/DialogXInterface.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/b4ea719ddbf80be0c2a09c42596a6e2e/transformed/DialogX-0.0.47.beta1/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

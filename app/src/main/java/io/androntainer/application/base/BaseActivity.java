@@ -35,4 +35,5 @@ abstract public class BaseActivity extends com.kongzue.baseframework.BaseActivit
 
     public abstract void init();
     public abstract void contentView();
+
 }

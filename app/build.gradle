@@ -59,6 +59,8 @@ dependencies {
     implementation 'com.github.farmerbb:libtaskbar:2.2.0'
     implementation 'com.github.kongzue:BaseFramework:6.8.7.1'
     implementation 'com.github.kongzue.DialogX:DialogX:0.0.47.beta1'
+    implementation "com.github.kongzue.DialogX:DialogXIOSStyle:0.0.47.beta1"
+    implementation "com.github.kongzue.DialogX:DialogXMaterialYou:0.0.47.beta1"
     implementation 'de.psdev.licensesdialog:licensesdialog:2.2.0'
     // 谷歌官方库
     implementation 'androidx.annotation:annotation:1.4.0'

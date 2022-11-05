@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="Gradle: com.blankj:utilcodex:1.31.0@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/dcc6e7fbc7332adcffc58dd50eb9c3ed/transformed/utilcodex-1.31.0/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/77cbf0ed995a9d2d5db868123186f49a/transformed/utilcodex-1.31.0/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/dcc6e7fbc7332adcffc58dd50eb9c3ed/transformed/utilcodex-1.31.0/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/dcc6e7fbc7332adcffc58dd50eb9c3ed/transformed/utilcodex-1.31.0/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/dcc6e7fbc7332adcffc58dd50eb9c3ed/transformed/utilcodex-1.31.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/77cbf0ed995a9d2d5db868123186f49a/transformed/utilcodex-1.31.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/77cbf0ed995a9d2d5db868123186f49a/transformed/utilcodex-1.31.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/77cbf0ed995a9d2d5db868123186f49a/transformed/utilcodex-1.31.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

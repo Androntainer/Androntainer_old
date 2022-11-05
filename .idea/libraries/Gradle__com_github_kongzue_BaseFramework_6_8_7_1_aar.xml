@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: com.github.kongzue:BaseFramework:6.8.7.1@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/8948abd5f0ac9bfea885af317b596303/transformed/BaseFramework-6.8.7.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/58fb93da2ef29f4c17d15cc300b53406/transformed/BaseFramework-6.8.7.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/58fb93da2ef29f4c17d15cc300b53406/transformed/BaseFramework-6.8.7.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/58fb93da2ef29f4c17d15cc300b53406/transformed/BaseFramework-6.8.7.1/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

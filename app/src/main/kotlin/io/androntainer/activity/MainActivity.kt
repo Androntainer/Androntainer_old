@@ -19,18 +19,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-//import com.google.android.material.R
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.composethemeadapter.MdcTheme
 import com.google.android.material.navigation.NavigationView
+import com.kongzue.dialogx.dialogs.FullScreenDialog
+import com.kongzue.dialogx.interfaces.OnBindView
 import io.androntainer.R
 import io.androntainer.application.app.MainActivityContentView
 import io.androntainer.databinding.ActivityMainBinding
@@ -192,7 +194,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         val greeting: ComposeView = binding0.greeting
         val navView: NavigationView = binding0.navView
         val navHostFragment =
-            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
+            (supportFragmentManager.findFragmentById(binding2.navHostFragmentContentMain.id) as NavHostFragment?)!!
         // ComposeView layout
         greeting.apply {
             setContent {
@@ -219,6 +221,10 @@ class MainActivity : AppCompatActivity(), Runnable {
         bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogStyle)
         bottomSheetDialog.window?.setDimAmount(0f)
         bottomSheetDialog.setContentView(binding2.root)
+
+
+
+       // fullScreenDialog.show()
     }
 
     private fun initBundle() {
@@ -275,6 +281,8 @@ class MainActivity : AppCompatActivity(), Runnable {
         } else {
             bottomSheetDialog.show()
         }
+
+
     }
 
     private fun apps() {
@@ -315,10 +323,10 @@ class MainActivity : AppCompatActivity(), Runnable {
 
     override fun onStart() {
         super.onStart()
-//        val view: FrameLayout = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
-//        val behavior = BottomSheetBehavior.from(view)
-//        view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-//        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        val view: FrameLayout = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
+        val behavior = BottomSheetBehavior.from(view)
+        view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     /**
