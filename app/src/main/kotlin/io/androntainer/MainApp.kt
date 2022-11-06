@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.app.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -65,10 +64,10 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.color.DynamicColors
-import com.google.android.material.composethemeadapter.MdcTheme
 import com.google.android.material.navigation.NavigationView
 import com.kongzue.baseframework.BaseActivity
 import com.kongzue.baseframework.BaseApp
+import com.kongzue.baseframework.BaseFragment
 import com.kongzue.baseframework.util.JumpParameter
 import com.kongzue.dialogx.DialogX
 import com.kongzue.dialogxmaterialyou.style.MaterialYouStyle
@@ -76,11 +75,11 @@ import io.androntainer.databinding.*
 import kotlinx.coroutines.Runnable
 import kotlin.math.hypot
 
+
 /**
  * Androntainer Project
  * Copyright (c) 2022 wyq0918dev.
  */
-
 
 abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 
@@ -101,8 +100,13 @@ abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 
 abstract class AndrontainerActivity : BaseActivity(), Runnable {
 
-    override fun initViews() {
+    override fun resetContentView(): View? {
+        setView()
+        return contentView()
+    }
 
+    override fun initViews() {
+        init()
     }
 
     override fun initDatas(parameter: JumpParameter?) {
@@ -117,15 +121,48 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
 
     }
 
+    abstract fun setView()
+    abstract fun contentView() : View?
+    abstract fun init()
+}
+
+abstract class FixedActivity : BaseActivity(){
+    override fun initViews() {
+
+    }
+
+    override fun initDatas(parameter: JumpParameter?) {
+
+    }
+
+    override fun setEvents() {
+
+    }
+
+}
+
+abstract class AndrontainerFragment<me: BaseActivity> : BaseFragment<me>(){
+
+    override fun initViews() {
+
+    }
+
+    override fun initDatas() {
+
+    }
+
+    override fun setEvents() {
+
+    }
 
 }
 
 class Androntainer : AndrontainerApplication() {
 
     override fun initSdk() {
-        initDynamicColors(this@Androntainer)
-        initDialogX(this@Androntainer)
-        initTaskbar(this@Androntainer)
+        initDynamicColors(me)
+        initDialogX(me)
+        initTaskbar(me)
     }
 }
 
@@ -280,8 +317,21 @@ class MainActivity : AppCompatActivity(), Runnable {
         // ComposeView layout
         greeting.apply {
             setContent {
-                MdcTheme {
-                    Layout()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val sharedPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(application)
+                    AndrontainerTheme(
+                        dynamicColor = sharedPreferences.getBoolean(
+                            "dynamic_colors",
+                            true
+                        )
+                    ) {
+                        Layout()
+                    }
+                } else {
+                    AndrontainerTheme(dynamicColor = false) {
+                        Layout()
+                    }
                 }
             }
         }
@@ -303,9 +353,6 @@ class MainActivity : AppCompatActivity(), Runnable {
         bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogStyle)
         bottomSheetDialog.window?.setDimAmount(0f)
         bottomSheetDialog.setContentView(binding2.root)
-
-
-        // fullScreenDialog.show()
     }
 
     private fun initBundle() {
@@ -679,7 +726,7 @@ class SelectOne : AppCompatActivity() {
             try {
                 itemAdapter.setMode(_mode!!)
                 itemAdapter.setUri(_uri!!)
-            } catch (e: Exception){
+            } catch (e: Exception) {
 
             }
             runOnUiThread {
@@ -1234,7 +1281,7 @@ fun AndrontainerTheme(
 
 @SuppressLint("InflateParams")
 @Composable
-fun WidgetClock(){
+fun WidgetClock() {
     AndroidView(
         factory = { context ->
             LayoutInflater.from(context)
@@ -1245,7 +1292,7 @@ fun WidgetClock(){
 
 @Preview
 @Composable
-fun WidgetClockPreview(){
+fun WidgetClockPreview() {
     WidgetClock()
 }
 
@@ -1256,10 +1303,10 @@ fun WidgetControl(
     AppsOnClick: () -> Unit,
     SearchOnClick: () -> Unit,
     SelectOnClick: () -> Unit
-){
+) {
     AndroidViewBinding(
         factory = WidgetControlBinding::inflate
-    ){
+    ) {
         controlDrawer.setOnClickListener {
             NavigationOnClick()
         }
@@ -1280,7 +1327,7 @@ fun WidgetControl(
 
 @Preview
 @Composable
-fun WidgetControlPreview(){
+fun WidgetControlPreview() {
     WidgetControl(
         NavigationOnClick = {},
         MenuOnClick = {},
@@ -1298,10 +1345,10 @@ fun WidgetTargetApp(
     targetAppVersionName: String,
     targetAppChecked: () -> Unit,
     targetAppUnchecked: () -> Unit,
-){
+) {
     AndroidViewBinding(
         factory = WidgetTargetAppBinding::inflate
-    ){
+    ) {
         checkbox.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) targetAppChecked() else targetAppUnchecked()
         }
@@ -1314,7 +1361,7 @@ fun WidgetTargetApp(
 
 @Preview
 @Composable
-fun WidgetTargetAppPreview(){
+fun WidgetTargetAppPreview() {
     WidgetTargetApp(
         targetAppName = "Androntainer",
         targetAppPackageName = "unknown",
@@ -1369,6 +1416,26 @@ fun ActivityMain(
     }
 }
 
+@Preview
+@Composable
+fun ActivityMainPreview(){
+    AndrontainerTheme {
+        ActivityMain(
+            title = "",
+            targetAppName = "",
+            targetAppPackageName = "",
+            targetAppDescription = "",
+            targetAppVersionName = "",
+            NavigationOnClick = {},
+            MenuOnClick = {},
+            SearchOnClick = {},
+            SheetOnClick = {},
+            AppsOnClick = {},
+            SelectOnClick = {}
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenHome(
@@ -1384,23 +1451,18 @@ fun ScreenHome(
     AppsOnClick: () -> Unit,
     SelectOnClick: () -> Unit,
     onNavigateToApps: () -> Unit,
-){
-    //val scaffoldState = rememberScaffoldState()
+) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val expandedMenu = remember { mutableStateOf(false) }
     val expandedPowerButton = remember { mutableStateOf(true) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        //scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text(
-                            text = title,
-                            //style = MaterialTheme.typography.body1
-                        )
+                        Text(text = title)
                     }
                 },
                 modifier = Modifier
@@ -1821,7 +1883,7 @@ fun ScreenHome(
 
 @Preview
 @Composable
-fun ScreenHomePreview(){
+fun ScreenHomePreview() {
     AndrontainerTheme {
         ScreenHome(
             title = "Androntainer",
@@ -1841,12 +1903,12 @@ fun ScreenHomePreview(){
 }
 
 @Composable
-fun ScreenApps(){
+fun ScreenApps() {
 
 }
 
 @Preview
 @Composable
-fun ScreenAppsPreview(){
+fun ScreenAppsPreview() {
     ScreenApps()
 }
