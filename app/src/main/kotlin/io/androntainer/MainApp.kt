@@ -68,6 +68,8 @@ import com.google.android.material.navigation.NavigationView
 import com.kongzue.baseframework.BaseActivity
 import com.kongzue.baseframework.BaseApp
 import com.kongzue.baseframework.BaseFragment
+import com.kongzue.baseframework.interfaces.GlobalLifeCircleListener
+import com.kongzue.baseframework.util.AppManager
 import com.kongzue.baseframework.util.JumpParameter
 import com.kongzue.dialogx.DialogX
 import com.kongzue.dialogxmaterialyou.style.MaterialYouStyle
@@ -101,30 +103,57 @@ abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 abstract class AndrontainerActivity : BaseActivity(), Runnable {
 
     override fun resetContentView(): View? {
-        setView()
+        initView()
         return contentView()
     }
 
     override fun initViews() {
-        init()
+        initContext()
+        initServices()
+        initSystemBar()
+        initUi()
+        initBundle()
     }
 
     override fun initDatas(parameter: JumpParameter?) {
-
+        postAnim()
+        initData(parameter)
     }
 
     override fun setEvents() {
-
+        setEvent()
     }
 
     override fun run() {
-
+        runnable()
     }
 
-    abstract fun setView()
+    protected val mConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(
+            className: ComponentName,
+            service: IBinder
+        ) {
+
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+
+        }
+    }
+
+    abstract fun initView()
     abstract fun contentView() : View?
-    abstract fun init()
+    abstract fun runnable()
+    abstract fun postAnim()
+    abstract fun initContext()
+    abstract fun initServices()
+    abstract fun initData(parameter: JumpParameter?)
+    abstract fun initSystemBar()
+    abstract fun initUi()
+    abstract fun initBundle()
+    abstract fun setEvent()
 }
+
 
 abstract class FixedActivity : BaseActivity(){
     override fun initViews() {
@@ -166,12 +195,12 @@ class Androntainer : AndrontainerApplication() {
     }
 }
 
-class MainActivity : AppCompatActivity(), Runnable {
+class MainActivity : AndrontainerActivity() {
 
     private lateinit var binding0: ActivityMainBinding
     private lateinit var binding1: DialogLicenseBinding
     private lateinit var binding2: SheetMainBinding
-    private lateinit var context: Context
+    private lateinit var thisContext: Context
     private lateinit var toolbar: MaterialToolbar
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var navController: NavController
@@ -183,28 +212,28 @@ class MainActivity : AppCompatActivity(), Runnable {
     private var targetAppName: String by mutableStateOf("unknown")
     private var targetPackageName: String by mutableStateOf("unknown")
     private var targetDescription: String by mutableStateOf("unknown")
-    private var android: String = "unknown"
+    private var androidVersion: String = "unknown"
     private var app = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun initView() {
         binding0 = ActivityMainBinding.inflate(layoutInflater)
         binding1 = DialogLicenseBinding.inflate(layoutInflater)
         binding2 = SheetMainBinding.inflate(layoutInflater)
 
         toolbar = binding2.toolbar
-        setContentView(binding0.root)
         setSupportActionBar(toolbar)
-        postAnim()
 
-        init()
+    }
+
+    override fun contentView(): View {
+        return binding0.root
     }
 
     /**
      * Splash animation
      */
 
-    override fun run() {
+    override fun runnable() {
         val logo: AppCompatImageView = binding0.logo
         val greeting: ComposeView = binding0.greeting
         val cx = logo.x + logo.width / 2f
@@ -229,64 +258,33 @@ class MainActivity : AppCompatActivity(), Runnable {
             .start()
     }
 
-    private fun postAnim() {
+    override fun postAnim() {
         binding0.greeting.visibility = View.INVISIBLE
         binding0.greeting.postDelayed(this, 200)
-    }
-
-    /**
-     * Main Loading Task
-     */
-
-    private fun init() {
-        initContext()
-        initServices()
-        initData()
-        initStatusBar()
-        initUI()
-        initBundle()
     }
 
     /**
      * Loading Context
      */
 
-    private fun initContext() {
-        context = this@MainActivity
+    override fun initContext() {
+        thisContext = me
     }
 
     /**
      * Loading background services
      */
 
-    private fun initServices() {
-        val intent = Intent(context, InAppBillingService::class.java)
+    override fun initServices() {
+        val intent = Intent(thisContext, InAppBillingService::class.java)
         startService(intent)
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
     }
 
-    private val mConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            service: IBinder
-        ) {
-
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-
-        }
-    }
-
-    /**
-     * Loading Data
-     */
-
-    private fun initData() {
+    override fun initData(parameter: JumpParameter?) {
         title = getString(R.string.app_name)
         targetAppName = "App"
-        android = getAndroidVersion()
-
+        androidVersion = getAndroidVersion()
     }
 
     /**
@@ -294,21 +292,24 @@ class MainActivity : AppCompatActivity(), Runnable {
      */
 
     @Suppress("DEPRECATION")
-    private fun initStatusBar() {
+    override fun initSystemBar() {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        //WindowCompat.setDecorFitsSystemWindows(window, false)
         val option =
             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         val decorView = window.decorView
         val visibility: Int = decorView.systemUiVisibility
         decorView.systemUiVisibility = visibility or option
+        setDarkStatusBarTheme(true)
+        setDarkNavigationBarTheme(true)
+        setNavigationBarBackgroundColor(android.graphics.Color.TRANSPARENT)
     }
 
     /**
      * Loading App Ui
      */
 
-    private fun initUI() {
-        // Theme
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    override fun initUi() {
         // Binding View
         val greeting: ComposeView = binding0.greeting
         val navView: NavigationView = binding0.navView
@@ -350,14 +351,99 @@ class MainActivity : AppCompatActivity(), Runnable {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
         // Navigation Fragment host BottomSheetDialog
-        bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogStyle)
+        bottomSheetDialog = BottomSheetDialog(thisContext, R.style.BottomSheetDialogStyle)
         bottomSheetDialog.window?.setDimAmount(0f)
         bottomSheetDialog.setContentView(binding2.root)
     }
 
-    private fun initBundle() {
+    override fun initBundle() {
         bundle = Bundle()
     }
+
+    override fun setEvent() {
+        setGlobalLifeCircleListener(
+            object : GlobalLifeCircleListener() {
+                override fun onCreate(me: BaseActivity, className: String) {
+                    super.onCreate(me, className)
+
+                }
+
+                override fun onResume(me: BaseActivity, className: String) {
+                    super.onResume(me, className)
+
+                }
+
+                override fun onPause(me: BaseActivity, className: String) {
+                    super.onPause(me, className)
+
+                }
+
+                override fun onDestroy(me: BaseActivity, className: String) {
+                    super.onDestroy(me, className)
+                    binding0.greeting.removeCallbacks(this@MainActivity)
+                }
+            }
+        )
+        AppManager.setOnActivityStatusChangeListener(
+            object : AppManager.OnActivityStatusChangeListener() {
+                override fun onActivityCreate(activity: BaseActivity) {
+                    super.onActivityCreate(activity)
+
+                }
+
+                override fun onActivityDestroy(activity: BaseActivity) {
+                    super.onActivityDestroy(activity)
+
+                }
+
+                override fun onAllActivityClose() {
+                    Log.e(">>>", "所有Activity已经关闭")
+                }
+            }
+        )
+    }
+
+    /**
+     * Bottom Sheet Dialog full screen
+     */
+
+    override fun onStart() {
+        super.onStart()
+        val view: FrameLayout =
+            bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
+        val behavior = BottomSheetBehavior.from(view)
+        view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    /**
+     * Create OptionsMenu
+     */
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
+    /**
+     * Options menu click
+     */
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     * Support navigate up
+     */
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+
 
     /**
      * Jetpack Compose Layout
@@ -389,6 +475,18 @@ class MainActivity : AppCompatActivity(), Runnable {
         )
     }
 
+    /**
+     * Jetpack Compose layout preview
+     */
+
+    @Preview
+    @Composable
+    fun ActivityMainPreview() {
+        AndrontainerTheme {
+            Layout()
+        }
+    }
+
     private fun drawer() {
         if (drawerLayout.isOpen) {
             drawerLayout.close()
@@ -400,7 +498,6 @@ class MainActivity : AppCompatActivity(), Runnable {
     private fun optionsMenu() {
         sheet()
         toolbar.showOverflowMenu()
-        //openOptionsMenu()
     }
 
     private fun sheet() {
@@ -445,66 +542,11 @@ class MainActivity : AppCompatActivity(), Runnable {
         navController.navigate(resId, bundle)//这里要改成apps页面
     }
 
-    /**
-     * Bottom Sheet Dialog full screen
-     */
 
-    override fun onStart() {
-        super.onStart()
-        val view: FrameLayout =
-            bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
-        val behavior = BottomSheetBehavior.from(view)
-        view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-    }
 
-    /**
-     * Create OptionsMenu
-     */
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
 
-    /**
-     * Options menu click
-     */
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    /**
-     * Support navigate up
-     */
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    /**
-     * Jetpack Compose layout preview
-     */
-
-    @Preview
-    @Composable
-    fun ActivityMainPreview() {
-        AndrontainerTheme {
-            Layout()
-        }
-    }
-
-    /**
-     * Remove content call back
-     */
-
-    override fun onDestroy() {
-        binding0.greeting.removeCallbacks(this)
-        super.onDestroy()
-    }
 }
 
 
