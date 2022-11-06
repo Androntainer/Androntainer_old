@@ -4,17 +4,15 @@ plugins {
 }
 
 android {
+    namespace "io.androntainer"
     compileSdk 33
 
     defaultConfig {
         applicationId "io.androntainer"
         minSdk 21
         targetSdk 33
-        versionCode 1
-        versionName "DeveloperPreview 1.0"
-
-        renderscriptTargetApi 21
-        renderscriptSupportModeEnabled true
+        versionCode 2
+        versionName "preview-02"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -55,15 +53,16 @@ android {
 dependencies {
 
     // 第三方库
-    implementation 'com.blankj:utilcodex:1.31.0'
+    implementation 'com.blankj:utilcodex:1.31.1'
     implementation 'com.github.farmerbb:libtaskbar:2.2.0'
     implementation 'com.github.kongzue:BaseFramework:6.8.7.1'
-    implementation 'com.github.kongzue.DialogX:DialogX:0.0.47.beta1'
-    implementation "com.github.kongzue.DialogX:DialogXIOSStyle:0.0.47.beta1"
-    implementation "com.github.kongzue.DialogX:DialogXMaterialYou:0.0.47.beta1"
+    implementation 'com.github.kongzue.DialogX:DialogX:0.0.47.beta2'
+    implementation 'com.github.kongzue.DialogX:DialogXMaterialYou:0.0.47.beta2'
     implementation 'de.psdev.licensesdialog:licensesdialog:2.2.0'
-    // 谷歌官方库
-    implementation 'androidx.annotation:annotation:1.4.0'
+    // JetBrains官方库
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // Google官方库
+    implementation 'androidx.annotation:annotation:1.5.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
@@ -72,7 +71,8 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation "androidx.compose.material:material:$compose_version"
+    implementation 'androidx.compose.material3:material3:1.0.0'
+    implementation 'androidx.compose.material3:material3-window-size-class:1.0.0'
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
@@ -82,11 +82,11 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.2'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.5.2'
-    implementation 'androidx.navigation:navigation-compose:2.5.2'
-    implementation 'com.google.android.material:material:1.6.1'
-    implementation 'com.google.android.material:compose-theme-adapter:1.1.19'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+    implementation 'androidx.navigation:navigation-compose:2.5.3'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'com.google.android.material:compose-theme-adapter:1.1.21'
     implementation 'com.google.android.gms:play-services-base:18.1.0'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-analytics:18.0.2'

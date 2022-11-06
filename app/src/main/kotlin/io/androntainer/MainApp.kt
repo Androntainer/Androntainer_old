@@ -1,33 +1,57 @@
 package io.androntainer
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.app.Service
 import android.app.WallpaperManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.view.*
-import android.widget.FrameLayout
+import android.widget.*
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.app.BundleCompat
+import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -35,6 +59,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.*
 import com.android.vending.billing.IInAppBillingService
+import com.blankj.utilcode.util.AppUtils
 import com.farmerbb.taskbar.lib.Taskbar
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -42,42 +67,56 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.composethemeadapter.MdcTheme
 import com.google.android.material.navigation.NavigationView
+import com.kongzue.baseframework.BaseActivity
+import com.kongzue.baseframework.BaseApp
+import com.kongzue.baseframework.util.JumpParameter
 import com.kongzue.dialogx.DialogX
-import com.kongzue.dialogx.style.IOSStyle
-import io.androntainer.application.base.BaseActivity
-import io.androntainer.application.fixedplay.FixedPlay
-import io.androntainer.databinding.ActivityMainBinding
-import io.androntainer.databinding.DialogLicenseBinding
-import io.androntainer.databinding.SheetMainBinding
-import io.androntainer.ui.activity.ActivityMain
-import io.androntainer.ui.values.AndrontainerTheme
+import com.kongzue.dialogxmaterialyou.style.MaterialYouStyle
+import io.androntainer.databinding.*
+import kotlinx.coroutines.Runnable
 import kotlin.math.hypot
-
 
 /**
  * Androntainer Project
  * Copyright (c) 2022 wyq0918dev.
  */
 
-abstract class AndrontainerApplication : Application() {
 
-    override fun onCreate() {
-        super.onCreate()
+abstract class AndrontainerApplication : BaseApp<Androntainer>() {
+
+    override fun init() {
+        setOnSDKInitializedCallBack {
+            log("SDK已加载完毕")
+            toast("SDK已加载完毕")
+        }
+    }
+
+    override fun initSDKs() {
+        super.initSDKs()
         initSdk()
     }
 
     abstract fun initSdk()
 }
 
-abstract class AndrontainerActivity : BaseActivity() {
+abstract class AndrontainerActivity : BaseActivity(), Runnable {
 
-    override fun init() {
+    override fun initViews() {
+
+    }
+
+    override fun initDatas(parameter: JumpParameter?) {
 
     }
 
-    override fun contentView() {
+    override fun setEvents() {
 
     }
+
+    override fun run() {
+
+    }
+
 
 }
 
@@ -266,8 +305,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         bottomSheetDialog.setContentView(binding2.root)
 
 
-
-       // fullScreenDialog.show()
+        // fullScreenDialog.show()
     }
 
     private fun initBundle() {
@@ -340,12 +378,12 @@ class MainActivity : AppCompatActivity(), Runnable {
     private fun getAndroidVersion(): String {
         return when (Build.VERSION.SDK_INT) {
             Build.VERSION_CODES.LOLLIPOP -> "Android Lollipop 5.0"
-            Build.VERSION_CODES.LOLLIPOP_MR1 -> "Android Lollipop 5.1"
+            Build.VERSION_CODES.LOLLIPOP_MR1 -> "Android Lollipop MR1 5.1"
             Build.VERSION_CODES.M -> "Android Marshmallow 6.0"
             Build.VERSION_CODES.N -> "Android Nougat 7.0"
-            Build.VERSION_CODES.N_MR1 -> "Android Nougat 7.1"
+            Build.VERSION_CODES.N_MR1 -> "Android Nougat MR1 7.1"
             Build.VERSION_CODES.O -> "Android Oreo 8.0"
-            Build.VERSION_CODES.O_MR1 -> "Android Oreo 8.1"
+            Build.VERSION_CODES.O_MR1 -> "Android Oreo MR1 8.1"
             Build.VERSION_CODES.P -> "Android Pie 9.0"
             Build.VERSION_CODES.Q -> "Android Q 10.0"
             Build.VERSION_CODES.R -> "Android RedVelvetCake 11.0"
@@ -366,7 +404,8 @@ class MainActivity : AppCompatActivity(), Runnable {
 
     override fun onStart() {
         super.onStart()
-        val view: FrameLayout = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
+        val view: FrameLayout =
+            bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
         val behavior = BottomSheetBehavior.from(view)
         view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -421,7 +460,6 @@ class MainActivity : AppCompatActivity(), Runnable {
     }
 }
 
-class Launcher : FixedPlay()
 
 @RequiresApi(Build.VERSION_CODES.M)
 open class FakeSignature : AppCompatActivity() {
@@ -458,12 +496,301 @@ open class FakeSignature : AppCompatActivity() {
     }
 }
 
+open class FixedPlay : AppCompatActivity() {
+
+    private var mPackageManager: PackageManager? = null
+
+    private val thisPackage = AppUtils.getAppPackageName()
+    private var mode: String? = "r2"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mPackageManager = packageManager
+        go()
+        finish()
+    }
+
+    @SuppressLint("WrongConstant")
+    fun go() {
+        val read = PreferenceManager.getDefaultSharedPreferences(this@FixedPlay)
+        val app = read.getString("app", "")
+        val className = read.getString("class", "")
+        mode = read.getString("mode", "r2")
+        if (app!!.isNotEmpty() && app != thisPackage) {
+            when (mode) {
+                "r2" -> {
+                    Log.w("MainActivity mode2", mode!!)
+                    val intent = packageManager!!.getLaunchIntentForPackage(app)
+                    intent?.let {
+                        startActivity(it)
+                    }
+                }
+                "r1" -> if (className!!.length > 5) {
+                    val intent = Intent()
+                    intent.setClassName(app, className)
+                    startActivity(intent)
+                } else {
+                    val intent: Intent? = packageManager!!.getLaunchIntentForPackage(app)
+                    intent!!.flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    this.startActivity(intent)
+                }
+            }
+        } else {
+            val intent = Intent(this@FixedPlay, FixedSettings::class.java)
+            startActivity(intent)
+        }
+    }
+}
+
+class FixedSettings : AppCompatActivity() {
+
+    private var mPackageManager: PackageManager? = null
+    private var _binding: ActivityLauncherSettingsBinding? = null
+    private val binding get() = _binding!!
+    private var _mode = ""
+    private var packageName: AppCompatTextView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // packageManager
+        mPackageManager = packageManager
+        // Intent
+        val intent = intent
+        // Layout
+        _binding = ActivityLauncherSettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        // Views
+        val button1: AppCompatButton = binding.button1
+        val button2: AppCompatButton = binding.button2
+        packageName = binding.textPakageName
+        val toolbar: Toolbar = binding.toolbar
+        // Click
+        button1.setOnClickListener {
+            selectLauncher(this@FixedSettings)
+        }
+        button2.setOnClickListener {
+            button2()
+        }
+        toolbar.setNavigationOnClickListener {
+            finish()
+        }
+        // Update Layout
+        go()
+        // Select App
+        val bundle = intent.extras
+        val setting = bundle?.getString("settings")
+        if (setting != null) {
+            if (setting == "select_app") {
+                button2()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+
+    @SuppressLint("SdCardPath")
+    private fun button2() {
+        val btf = getString(R.string.btf)
+        val act = getString(R.string.act)
+        val mode = getString(R.string.mode)
+        val items3 = arrayOf(btf, act)
+        val alertDialog3: AlertDialog = AlertDialog.Builder(this@FixedSettings)
+            .setTitle(mode)
+            .setIcon(R.drawable.ic_baseline_androntainer_plat_logo_24)
+            .setItems(items3) { _: DialogInterface?, i: Int ->
+                _mode = ""
+                val select = Intent(this@FixedSettings, SelectOne::class.java)
+                when (i) {
+                    0 -> {
+                        _mode = "r2"
+                        select.putExtra("_mode", _mode)
+                        startActivity(select)
+                    }
+                    1 -> {
+                        _mode = "r1"
+                        select.putExtra("_mode", _mode)
+                        startActivity(select)
+                    }
+                }
+            }
+            .create()
+        alertDialog3.show()
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        go()
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun go() {
+        val read = PreferenceManager.getDefaultSharedPreferences(this@FixedSettings)
+        val app = read.getString("app", "")
+        if (app!!.isEmpty()) return
+        val label = read.getString("label", "")
+        val uri = read.getString("uri", "")
+        val className = read.getString("class", "")
+        val icon: Drawable
+        try {
+            val appInfo = packageManager!!.getApplicationInfo(app, 0)
+            icon = appInfo.loadIcon(packageManager)
+            runOnUiThread {
+                packageName!!.text = label
+                binding.applistItem.itemImg.setImageDrawable(icon)
+                binding.applistItem.itemText.text = app
+                binding.applistItem.itemPackageName.text = """
+                                    $uri
+                                    $className
+                                    """.trimIndent()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
+class SelectOne : AppCompatActivity() {
+
+    private var _binding: ActivityApplistBinding? = null
+    private val binding get() = _binding!!
+    private val list: MutableList<Item?> = ArrayList()
+    private var listView: ListView? = null
+    private var progressBar: ProgressBar? = null
+    private var _mode: String? = null
+    private var _uri: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _binding = ActivityApplistBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
+        progressBar = binding.progressBar
+        val intent = intent
+        val bundle = intent.extras
+        _mode = bundle?.getString("_mode")
+        _uri = bundle?.getString("_uri")
+        Thread {
+            loadAllApps(makeIntent())
+            val itemAdapter = ItemAdapter(this@SelectOne, R.layout.item_applist, list)
+            try {
+                itemAdapter.setMode(_mode!!)
+                itemAdapter.setUri(_uri!!)
+            } catch (e: Exception){
+
+            }
+            runOnUiThread {
+                listView = binding.listview
+                listView!!.adapter = itemAdapter
+                progressBar!!.visibility = View.GONE
+            }
+        }.start()
+        val toolbar: Toolbar = binding.toolbar
+        toolbar.setNavigationOnClickListener {
+            finish()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        finish()
+    }
+
+    private fun loadAllApps(intent: Intent?) {
+        val mApps: MutableList<ResolveInfo>
+        mApps = ArrayList()
+        try {
+            mApps.addAll(this.packageManager.queryIntentActivities(intent!!, 0))
+            val pm = packageManager
+            for (r in mApps) {
+                val item = Item(
+                    r.loadLabel(pm).toString(),
+                    r.activityInfo.packageName,
+                    r.activityInfo.name,
+                    r.loadIcon(pm)
+                )
+                list.add(item)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    @SuppressLint("WrongConstant, UseSwitchCompatOrMaterialCode")
+    private fun makeIntent(): Intent? {
+        when (_mode) {
+            "r2", "r1" -> {
+                val mainIntent = Intent(Intent.ACTION_MAIN, null)
+                mainIntent.addCategory(Intent.CATEGORY_HOME)
+                return mainIntent
+            }
+        }
+        return null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
+}
+
 @RequiresApi(Build.VERSION_CODES.M)
 class Google : FakeSignature() {
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
         main(1)
+    }
+}
+
+//class Launcher : FixedPlay()
+
+class SettingsFragment : PreferenceFragmentCompat() {
+
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.root_preferences, rootKey)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+
+        val dynamic: SwitchPreference? = findPreference("dynamic_colors")
+        val about: Preference? = findPreference("about")
+        val taskbarCategory: PreferenceCategory? = findPreference("libtaskbar")
+        val desktop: SwitchPreference? = findPreference("desktop")
+        val config: Preference? = findPreference("config_desktop")
+        val taskbar: Preference? = findPreference("taskbar")
+        val fixed: Preference? = findPreference("fixed_play")
+        val default: Preference? = findPreference("default_launcher")
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            dynamic?.isChecked = sharedPreferences.getBoolean("developer", false)
+            dynamic?.isEnabled = sharedPreferences.getBoolean("developer", false)
+        }
+        about?.setOnPreferenceClickListener {
+            // 跳转关于页面
+            true
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            taskbarCategory?.isEnabled = sharedPreferences.getBoolean("developer", false)
+            desktop?.isChecked = sharedPreferences.getBoolean("developer", false)
+        }
+        config?.setOnPreferenceClickListener {
+            // 跳转权限配置界面
+            true
+        }
+        taskbar?.setOnPreferenceClickListener {
+            taskbarSettings(requireActivity())
+            true
+        }
+        fixed?.setOnPreferenceClickListener {
+            anyLauncher(requireActivity())
+            true
+        }
+        default?.setOnPreferenceClickListener {
+            defaultLauncher(requireActivity())
+            true
+        }
     }
 }
 
@@ -681,84 +1008,97 @@ class InAppBillingService : Service() {
     }
 }
 
-class SettingsFragment : PreferenceFragmentCompat() {
+class Item(
+    val name: String,
+    val packageName: String,
+    val className: String,
+    val appIcon: Drawable
+)
 
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+class ItemAdapter(
+    context: Context?,
+    private val layoutId:
+    Int, list: List<Item?>?
+) : ArrayAdapter<Item?>(
+    context!!,
+    layoutId,
+    list!!
+) {
 
-        val dynamic: SwitchPreference? = findPreference("dynamic_colors")
-        val about: Preference? = findPreference("about")
-        val taskbarCategory: PreferenceCategory? = findPreference("libtaskbar")
-        val desktop: SwitchPreference? = findPreference("desktop")
-        val config: Preference? = findPreference("config_desktop")
-        val taskbar: Preference? = findPreference("taskbar")
-        val fixed: Preference? = findPreference("fixed_play")
-        val default: Preference? = findPreference("default_launcher")
+    private var mode = "r2"
+    private var uri = ""
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S){
-            dynamic?.isChecked = sharedPreferences.getBoolean("developer", false)
-            dynamic?.isEnabled = sharedPreferences.getBoolean("developer", false)
+    fun setMode(mode: String) {
+        this.mode = mode
+    }
+
+    fun setUri(uri: String) {
+        this.uri = uri
+    }
+
+    @SuppressLint("ViewHolder")
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val item = getItem(position)
+        val view = LayoutInflater.from(context).inflate(layoutId, parent, false)
+        val packageName = item!!.packageName
+        (view.findViewById<View>(R.id.item_img) as AppCompatImageView).setImageDrawable(
+            item.appIcon
+        )
+        (view.findViewById<View>(R.id.item_text) as AppCompatTextView).text = item.name
+        (view.findViewById<View>(R.id.item_packageName) as AppCompatTextView).text =
+            packageName
+        view.setOnClickListener {
+            val pm = context.packageManager
+            var intent = pm.getLaunchIntentForPackage(packageName)
+            if (intent != null) {
+                val editor =
+                    PreferenceManager.getDefaultSharedPreferences(context)
+                        .edit()
+                editor.putString("app", packageName)
+                editor.putString("label", item.name)
+                editor.putString("class", item.className)
+                editor.putString("uri", uri)
+                editor.putString("mode", mode)
+                editor.apply()
+                intent =
+                    Intent(context, FixedSettings::class.java)
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, R.string.error_could_not_start, Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
-        about?.setOnPreferenceClickListener {
-            // 跳转关于页面
-            true
-        }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            taskbarCategory?.isEnabled = sharedPreferences.getBoolean("developer", false)
-            desktop?.isChecked = sharedPreferences.getBoolean("developer", false)
-        }
-        config?.setOnPreferenceClickListener {
-            // 跳转权限配置界面
-            true
-        }
-        taskbar?.setOnPreferenceClickListener {
-            taskbarSettings(requireActivity())
-            true
-        }
-        fixed?.setOnPreferenceClickListener {
-            anyLauncher(requireActivity())
-            true
-        }
-        default?.setOnPreferenceClickListener {
-            defaultLauncher(requireActivity())
-            true
-        }
+        return view
     }
 }
 
 
-
-
-
-
-
-fun initDynamicColors(application: Application){
+fun initDynamicColors(application: Application) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (sharedPreferences.getBoolean("dynamic_colors", true)){
+        if (sharedPreferences.getBoolean("dynamic_colors", true)) {
             DynamicColors.applyToActivitiesIfAvailable(application)
         }
     }
 }
 
-fun initDialogX(application: Application){
+fun initDialogX(application: Application) {
     DialogX.init(application)
-    DialogX.globalStyle = IOSStyle()
+    DialogX.globalStyle = MaterialYouStyle()
     DialogX.globalTheme = DialogX.THEME.AUTO
     DialogX.autoShowInputKeyboard = true
     DialogX.onlyOnePopTip = false
     DialogX.cancelable = true
     DialogX.cancelableTipDialog = false
-    DialogX.bottomDialogNavbarColor = Color.TRANSPARENT
+    DialogX.bottomDialogNavbarColor = android.graphics.Color.TRANSPARENT
     DialogX.autoRunOnUIThread = false
     DialogX.useHaptic = true
 }
 
-fun initTaskbar(application: Application){
+fun initTaskbar(application: Application) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-        if (sharedPreferences.getBoolean("desktop", true)){
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (sharedPreferences.getBoolean("desktop", true)) {
             Taskbar.setEnabled(application, true)
         } else {
             Taskbar.setEnabled(application, false)
@@ -780,7 +1120,7 @@ fun MainActivityContentView(
     SelectOnClick: () -> Unit,
 
     //content: @Composable (PaddingValues) -> Unit,
-){
+) {
     ActivityMain(
         title = title,
         targetAppName = targetAppName,
@@ -806,26 +1146,707 @@ fun wallpaper(context: Context?): Drawable? {
  * Settings
  */
 
-fun taskbarSettings(context: Context){
+fun taskbarSettings(context: Context) {
     Taskbar.openSettings(context, "桌面模式设置", R.style.Theme_Taskbar)
 }
 
-fun defaultLauncher(context: Context){
+fun defaultLauncher(context: Context) {
     val intent = Intent(Settings.ACTION_HOME_SETTINGS)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
 }
 
-fun selectLauncher(context: Context){
+fun selectLauncher(context: Context) {
     context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
 }
 
-fun anyLauncher(context: Context){
-    val intent = Intent(context, io.androntainer.application.fixedplay.Settings::class.java)
+fun anyLauncher(context: Context) {
+    val intent = Intent(context, FixedSettings().javaClass)
     context.startActivity(intent)
 }
 
-fun startLauncher(context: Context){
-    val intent = Intent(context, Launcher::class.java)
+fun startLauncher(context: Context) {
+    val intent = Intent(context, FixedPlay().javaClass)
     context.startActivity(intent)
+}
+
+const val aidlux: String = "com.aidlux"
+
+val Purple80 = Color(0xFFD0BCFF)
+val PurpleGrey80 = Color(0xFFCCC2DC)
+val Pink80 = Color(0xFFEFB8C8)
+
+val Purple40 = Color(0xFF6650a4)
+val PurpleGrey40 = Color(0xFF625b71)
+val Pink40 = Color(0xFF7D5260)
+
+val Typography = Typography(
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    )
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80
+)
+
+private val LightColorScheme = lightColorScheme(
+    primary = Purple40,
+    secondary = PurpleGrey40,
+    tertiary = Pink40
+)
+
+@Composable
+fun AndrontainerTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
+
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+        }
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
+}
+
+@SuppressLint("InflateParams")
+@Composable
+fun WidgetClock(){
+    AndroidView(
+        factory = { context ->
+            LayoutInflater.from(context)
+                .inflate(R.layout.widget_clock, null)
+        }
+    )
+}
+
+@Preview
+@Composable
+fun WidgetClockPreview(){
+    WidgetClock()
+}
+
+@Composable
+fun WidgetControl(
+    NavigationOnClick: () -> Unit,
+    MenuOnClick: () -> Unit,
+    AppsOnClick: () -> Unit,
+    SearchOnClick: () -> Unit,
+    SelectOnClick: () -> Unit
+){
+    AndroidViewBinding(
+        factory = WidgetControlBinding::inflate
+    ){
+        controlDrawer.setOnClickListener {
+            NavigationOnClick()
+        }
+        controlMenu.setOnClickListener {
+            MenuOnClick()
+        }
+        controlApps.setOnClickListener {
+            AppsOnClick()
+        }
+        controlSearch.setOnClickListener {
+            SearchOnClick()
+        }
+        controlSelect.setOnClickListener {
+            SelectOnClick()
+        }
+    }
+}
+
+@Preview
+@Composable
+fun WidgetControlPreview(){
+    WidgetControl(
+        NavigationOnClick = {},
+        MenuOnClick = {},
+        AppsOnClick = {},
+        SearchOnClick = {},
+        SelectOnClick = {}
+    )
+}
+
+@Composable
+fun WidgetTargetApp(
+    targetAppName: String,
+    targetAppPackageName: String,
+    targetAppDescription: String,
+    targetAppVersionName: String,
+    targetAppChecked: () -> Unit,
+    targetAppUnchecked: () -> Unit,
+){
+    AndroidViewBinding(
+        factory = WidgetTargetAppBinding::inflate
+    ){
+        checkbox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) targetAppChecked() else targetAppUnchecked()
+        }
+        title.text = targetAppName
+        versionName.text = targetAppVersionName
+        packageName.text = targetAppPackageName
+        description.text = targetAppDescription
+    }
+}
+
+@Preview
+@Composable
+fun WidgetTargetAppPreview(){
+    WidgetTargetApp(
+        targetAppName = "Androntainer",
+        targetAppPackageName = "unknown",
+        targetAppDescription = "unknown",
+        targetAppVersionName = "1.0",
+        targetAppChecked = {},
+        targetAppUnchecked = {}
+    )
+}
+
+@Composable
+fun ActivityMain(
+    title: String,
+    targetAppName: String,
+    targetAppPackageName: String,
+    targetAppDescription: String,
+    targetAppVersionName: String,
+    NavigationOnClick: () -> Unit,
+    MenuOnClick: () -> Unit,
+    SearchOnClick: () -> Unit,
+    SheetOnClick: () -> Unit,
+    AppsOnClick: () -> Unit,
+    SelectOnClick: () -> Unit,
+) {
+    val navController = rememberNavController()
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        NavHost(navController = navController, startDestination = "home") {
+            composable("home") {
+                ScreenHome(
+                    title = title,
+                    targetAppName = targetAppName,
+                    targetAppPackageName = targetAppPackageName,
+                    targetAppDescription = targetAppDescription,
+                    targetAppVersionName = targetAppVersionName,
+                    NavigationOnClick = NavigationOnClick,
+                    MenuOnClick = MenuOnClick,
+                    SearchOnClick = SearchOnClick,
+                    SheetOnClick = SheetOnClick,
+                    AppsOnClick = AppsOnClick,
+                    SelectOnClick = SelectOnClick,
+                    onNavigateToApps = { navController.navigate("apps") },
+                )
+            }
+            composable("apps") {
+
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenHome(
+    title: String,
+    targetAppName: String,
+    targetAppPackageName: String,
+    targetAppDescription: String,
+    targetAppVersionName: String,
+    NavigationOnClick: () -> Unit,
+    MenuOnClick: () -> Unit,
+    SearchOnClick: () -> Unit,
+    SheetOnClick: () -> Unit,
+    AppsOnClick: () -> Unit,
+    SelectOnClick: () -> Unit,
+    onNavigateToApps: () -> Unit,
+){
+    //val scaffoldState = rememberScaffoldState()
+    val scrollState = rememberScrollState()
+    val scope = rememberCoroutineScope()
+    val expandedMenu = remember { mutableStateOf(false) }
+    val expandedPowerButton = remember { mutableStateOf(true) }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        //scaffoldState = scaffoldState,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            text = title,
+                            //style = MaterialTheme.typography.body1
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            //NavigationOnClick()
+
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = null
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            expandedMenu.value = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = null
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedMenu.value,
+                        onDismissRequest = {
+                            expandedMenu.value = false
+                        },
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text("分享")
+                            },
+                            onClick = {
+
+                                expandedMenu.value = false
+                            }
+                        )
+                        Divider()
+                        DropdownMenuItem(
+                            text = {
+                                Text("抽屉")
+                            },
+                            onClick = {
+//                                scope.launch {
+//                                    scaffoldState.drawerState.apply {
+//                                        if (isClosed) open() else close()
+//                                    }
+//                                }
+//                                expandedMenu.value = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text("更多")
+                            },
+                            onClick = {
+                                expandedMenu.value = false
+                                MenuOnClick()
+                            }
+                        )
+                    }
+                },
+            )
+        },
+        bottomBar = {
+
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToApps,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowForward,
+                    contentDescription = null
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End,
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.background),
+//                    contentDescription = null,
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentScale = ContentScale.FillBounds
+//                )
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "当前时间",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 5.dp,
+                                bottom = 2.5.dp
+                            )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 5.dp
+                            ),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        WidgetClock()
+                    }
+                }
+
+                Divider()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "控制台",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 5.dp,
+                                bottom = 2.5.dp
+                            )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 5.dp
+                            ),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        WidgetControl(
+                            NavigationOnClick = {
+                                //NavigationOnClick()
+//                                scope.launch {
+//                                    scaffoldState.drawerState.apply {
+//                                        if (isClosed) open() else close()
+//                                    }
+//                                }
+                            },
+                            MenuOnClick = {
+                                expandedMenu.value = true
+                            },
+                            AppsOnClick = onNavigateToApps,
+                            SearchOnClick = SearchOnClick,
+                            SelectOnClick = SelectOnClick
+                        )
+                    }
+                }
+                Divider()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "目标应用",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 5.dp,
+                                bottom = 2.5.dp
+                            )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 5.dp
+                            ),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        WidgetTargetApp(
+                            targetAppName = targetAppName,
+                            targetAppPackageName = targetAppPackageName,
+                            targetAppDescription = targetAppDescription,
+                            targetAppVersionName = targetAppVersionName,
+                            targetAppChecked = {
+                                expandedPowerButton.value = true
+                            },
+                            targetAppUnchecked = {
+                                expandedPowerButton.value = false
+                            }
+                        )
+                    }
+                }
+                Divider()
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "电源",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 5.dp,
+                                bottom = 2.5.dp
+                            )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 5.dp
+                            )
+                    ) {
+                        Button(
+                            onClick = { /*TODO*/ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(end = 2.5.dp),
+                            enabled = expandedPowerButton.value
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ToggleOn,
+                                    contentDescription = null,
+                                    tint = Color.Green
+                                )
+                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                                Text(
+                                    text = "ON",
+                                    color = Color.Green
+                                )
+                            }
+                        }
+                        Button(
+                            onClick = { /*TODO*/ },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .padding(start = 2.5.dp),
+                            enabled = expandedPowerButton.value
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ToggleOff,
+                                    contentDescription = null,
+                                    tint = Color.Red
+                                )
+                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                                Text(
+                                    text = "OFF",
+                                    color = Color.Red
+                                )
+                            }
+
+                        }
+                    }
+                }
+                Divider()
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "设备信息",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 5.dp,
+                                bottom = 2.5.dp
+                            )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 2.5.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Android,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "sb",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(
+                                    start = 5.dp,
+                                )
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 2.5.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhoneAndroid,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "sb",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(
+                                    start = 5.dp,
+                                )
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(
+                                start = 5.dp,
+                                end = 5.dp,
+                                top = 2.5.dp,
+                                bottom = 2.5.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.DesignServices,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "sb",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(
+                                    start = 5.dp,
+                                )
+                        )
+                    }
+                }
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(5.dp),
+//                        shape = MaterialTheme.shapes.small.copy(
+//                            CornerSize(percent = 10)
+//                        ),
+//                        backgroundColor = Color(0x99FFFFFF),
+//                        elevation = 0.dp,
+//                    ) {
+//
+//                    }
+
+//                    AndroidViewBinding(
+//                        factory = FactoryMainBinding::inflate,
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .padding(innerPadding),
+//                    ) {
+//
+//                    }
+
+
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun ScreenHomePreview(){
+    AndrontainerTheme {
+        ScreenHome(
+            title = "Androntainer",
+            targetAppName = "Androntainer",
+            targetAppPackageName = "Androntainer",
+            targetAppDescription = "Androntainer",
+            targetAppVersionName = "1.0",
+            NavigationOnClick = {},
+            MenuOnClick = {},
+            SearchOnClick = {},
+            SheetOnClick = {},
+            onNavigateToApps = {},
+            AppsOnClick = {},
+            SelectOnClick = {}
+        )
+    }
+}
+
+@Composable
+fun ScreenApps(){
+
+}
+
+@Preview
+@Composable
+fun ScreenAppsPreview(){
+    ScreenApps()
 }
