@@ -1,3 +1,7 @@
+/**
+ * Androntainer Project
+ * Copyright (c) 2022 wyq0918dev.
+ */
 package io.androntainer
 
 import android.annotation.SuppressLint
@@ -18,9 +22,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.AppCompatImageView
-import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.*
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -45,7 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -60,6 +65,7 @@ import androidx.preference.*
 import com.android.vending.billing.IInAppBillingService
 import com.blankj.utilcode.util.AppUtils
 import com.farmerbb.taskbar.lib.Taskbar
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -77,11 +83,6 @@ import io.androntainer.databinding.*
 import kotlinx.coroutines.Runnable
 import kotlin.math.hypot
 
-
-/**
- * Androntainer Project
- * Copyright (c) 2022 wyq0918dev.
- */
 
 abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 
@@ -142,7 +143,7 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
     }
 
     abstract fun initView()
-    abstract fun contentView() : View?
+    abstract fun contentView(): View?
     abstract fun runnable()
     abstract fun postAnim()
     abstract fun initContext()
@@ -155,7 +156,7 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
 }
 
 
-abstract class FixedActivity : BaseActivity(){
+abstract class FixedActivity : BaseActivity() {
     override fun initViews() {
 
     }
@@ -170,7 +171,7 @@ abstract class FixedActivity : BaseActivity(){
 
 }
 
-abstract class AndrontainerFragment<me: BaseActivity> : BaseFragment<me>(){
+abstract class AndrontainerFragment<me : BaseActivity> : BaseFragment<me>() {
 
     override fun initViews() {
 
@@ -189,7 +190,7 @@ abstract class AndrontainerFragment<me: BaseActivity> : BaseFragment<me>(){
 class Androntainer : AndrontainerApplication() {
 
     override fun initSdk() {
-        initDynamicColors(me)
+        //initDynamicColors(me)
         initDialogX(me)
         initTaskbar(me)
     }
@@ -220,13 +221,87 @@ class MainActivity : AndrontainerActivity() {
         binding1 = DialogLicenseBinding.inflate(layoutInflater)
         binding2 = SheetMainBinding.inflate(layoutInflater)
 
-        toolbar = binding2.toolbar
-        setSupportActionBar(toolbar)
+        val toolbar = MaterialToolbar(me).apply {
 
+            popupTheme = R.style.ThemeOverlay_Androntainer_NoActionBar_PopupOverlay
+            setBackgroundColor(
+                ContextCompat.getColor(
+                    me,
+                    R.color.purple_500
+                )
+            )
+        }
+
+        val logo = AppCompatImageView(me).apply {
+
+        }
+
+        val compose = ComposeView(me).apply {
+
+        }
+
+        val layout = LinearLayoutCompat(
+            me
+        ).apply {
+            orientation = LinearLayoutCompat.VERTICAL
+            addView(
+                AppBarLayout(
+                    me
+                ).apply {
+                    setTheme(R.style.ThemeOverlay_Androntainer_NoActionBar_AppBarOverlay)
+                    addView(
+                        toolbar,
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                    )
+                },
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            addView(
+                CoordinatorLayout(
+                    me
+                ).apply {
+                    addView(
+                        ComposeView(
+                            me
+                        ).apply {
+
+                        },
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    )
+                    addView(
+                        AppCompatImageView(
+                            me
+                        ).apply {
+
+                        },
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    )
+                },
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            )
+        }
     }
 
     override fun contentView(): View {
-        return binding0.root
+        val root: View = binding0.root
+        toolbar = binding2.toolbar
+        setSupportActionBar(toolbar)
+        return root
     }
 
     /**
@@ -288,13 +363,13 @@ class MainActivity : AndrontainerActivity() {
     }
 
     /**
-     * Loading system StatusBar style
+     * Loading system bar style
      */
 
     @Suppress("DEPRECATION")
     override fun initSystemBar() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        //WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         val option =
             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         val decorView = window.decorView
@@ -314,7 +389,7 @@ class MainActivity : AndrontainerActivity() {
         val greeting: ComposeView = binding0.greeting
         val navView: NavigationView = binding0.navView
         val navHostFragment =
-            (supportFragmentManager.findFragmentById(binding2.navHostFragmentContentMain.id) as NavHostFragment?)!!
+            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
         // ComposeView layout
         greeting.apply {
             setContent {
@@ -330,12 +405,20 @@ class MainActivity : AndrontainerActivity() {
                         Layout()
                     }
                 } else {
-                    AndrontainerTheme(dynamicColor = false) {
+                    AndrontainerTheme(
+                        dynamicColor = false
+                    ) {
                         Layout()
                     }
                 }
             }
         }
+        // Navigation Fragment host BottomSheetDialog
+        bottomSheetDialog = BottomSheetDialog(thisContext, R.style.BottomSheetDialogStyle)
+        bottomSheetDialog.window?.setDimAmount(0f)
+        bottomSheetDialog.setContentView(binding2.root)
+
+
         // Navigation
         drawerLayout = binding0.drawerLayout
         navController = navHostFragment.navController
@@ -350,10 +433,7 @@ class MainActivity : AndrontainerActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        // Navigation Fragment host BottomSheetDialog
-        bottomSheetDialog = BottomSheetDialog(thisContext, R.style.BottomSheetDialogStyle)
-        bottomSheetDialog.window?.setDimAmount(0f)
-        bottomSheetDialog.setContentView(binding2.root)
+
     }
 
     override fun initBundle() {
@@ -442,7 +522,6 @@ class MainActivity : AndrontainerActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
-
 
 
     /**
@@ -539,12 +618,8 @@ class MainActivity : AndrontainerActivity() {
     }
 
     private fun navigate(resId: Int) {
-        navController.navigate(resId, bundle)//这里要改成apps页面
+        navController.navigate(resId, bundle)
     }
-
-
-
-
 
 
 }
@@ -585,7 +660,7 @@ open class FakeSignature : AppCompatActivity() {
     }
 }
 
-open class FixedPlay : AppCompatActivity() {
+class FixedPlay : AppCompatActivity() {
 
     private var mPackageManager: PackageManager? = null
 
@@ -1460,7 +1535,7 @@ fun ActivityMain(
 
 @Preview
 @Composable
-fun ActivityMainPreview(){
+fun ActivityMainPreview() {
     AndrontainerTheme {
         ActivityMain(
             title = "",

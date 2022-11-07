@@ -3,9 +3,9 @@
 
     <style name="ThemeOverlay.Androntainer.NoActionBar.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="ThemeOverlay.Androntainer.NoActionBar.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
+    <style name="ThemeOverlay.Androntainer.NoActionBar.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="BottomSheetDialogStyle" parent="ThemeOverlay.Material3.BottomSheetDialog">
+    <style name="BottomSheetDialogStyle" parent="ThemeOverlay.AppCompat">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="windowNoTitle">false</item>
