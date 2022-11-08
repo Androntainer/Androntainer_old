@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="navigation_drawer_open">打开导航抽屉</string>
-    <string name="navigation_drawer_close">关闭导航抽屉</string>
     <string name="nav_header_desc">导航标题</string>
     <string name="action_settings">设置</string>
-    <string name="message_env">当前管理的应用程序：</string>
     <string name="module">模块</string>
     <string name="text_yourDevice">设备</string>
     <string name="drawer">导航</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Base" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.Base" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -45,8 +45,8 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Androntainer.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Androntainer.AppBarOverlay" parent="ThemeOverlay.Material3.Dark" />
 
-    <style name="Theme.Androntainer.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.Androntainer.PopupOverlay" parent="ThemeOverlay.Material3.Light" />
 
 </resources>

@@ -2,17 +2,10 @@
 <resources>
     <string name="app_name" translatable="false">Androntainer</string>
     <string name="todo" translatable="false">null</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_subtitle" translatable="false">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="message_env">Currently managed apps:</string>
-    <string name="menu_home" translatable="false">Home</string>
-    <string name="menu_gallery" translatable="false">Gallery</string>
-    <string name="menu_slideshow" translatable="false">Slideshow</string>
-    <string name="menu_settings" translatable="false">Settings</string>
-    <string name="menu_dashboard" translatable="false">Dashboard</string>
+
     <string name="status">Activated framework</string>
     <string name="framework_active" translatable="false">framework is activated.</string>
     <string name="module">Module</string>
@@ -43,5 +36,9 @@
     <string name="mode">Select working mode</string>
     <string name="hhmm" translatable="false">HHMM</string>
     <string name="yyyymmdde" translatable="false">YYYYMMDDE</string>
+    <string name="menu_navigation">Navigation</string>
+    <string name="menu_launcher">Launcher</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_dashboard">Dashboard</string>
 
 </resources>

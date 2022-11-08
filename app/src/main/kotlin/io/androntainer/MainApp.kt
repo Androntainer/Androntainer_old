@@ -19,6 +19,7 @@ import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -30,15 +31,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.twotone.Dashboard
+import androidx.compose.material.icons.twotone.Home
+import androidx.compose.material.icons.twotone.Launch
+import androidx.compose.material.icons.twotone.Navigation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -51,26 +60,19 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import androidx.preference.*
 import com.android.vending.billing.IInAppBillingService
 import com.blankj.utilcode.util.AppUtils
 import com.farmerbb.taskbar.lib.Taskbar
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.color.DynamicColors
-import com.google.android.material.navigation.NavigationView
 import com.kongzue.baseframework.BaseActivity
 import com.kongzue.baseframework.BaseApp
 import com.kongzue.baseframework.BaseFragment
@@ -113,7 +115,6 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
         initServices()
         initSystemBar()
         initUi()
-        initBundle()
     }
 
     override fun initDatas(parameter: JumpParameter?) {
@@ -151,12 +152,10 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
     abstract fun initData(parameter: JumpParameter?)
     abstract fun initSystemBar()
     abstract fun initUi()
-    abstract fun initBundle()
     abstract fun setEvent()
 }
 
-
-abstract class FixedActivity : BaseActivity() {
+abstract class LibraryActivity : BaseActivity() {
     override fun initViews() {
 
     }
@@ -171,7 +170,28 @@ abstract class FixedActivity : BaseActivity() {
 
 }
 
-abstract class AndrontainerFragment<me : BaseActivity> : BaseFragment<me>() {
+abstract class FixedActivity : BaseActivity() {
+
+    override fun resetContentView(): View {
+        return super.resetContentView()
+    }
+
+    override fun initViews() {
+
+    }
+
+    override fun initDatas(parameter: JumpParameter?) {
+
+    }
+
+    override fun setEvents() {
+
+    }
+
+
+}
+
+abstract class AndrontainerFragment<me : AndrontainerActivity> : BaseFragment<me>() {
 
     override fun initViews() {
 
@@ -190,7 +210,7 @@ abstract class AndrontainerFragment<me : BaseActivity> : BaseFragment<me>() {
 class Androntainer : AndrontainerApplication() {
 
     override fun initSdk() {
-        //initDynamicColors(me)
+        initDynamicColors(me)
         initDialogX(me)
         initTaskbar(me)
     }
@@ -198,16 +218,11 @@ class Androntainer : AndrontainerApplication() {
 
 class MainActivity : AndrontainerActivity() {
 
-    private lateinit var binding0: ActivityMainBinding
-    private lateinit var binding1: DialogLicenseBinding
-    private lateinit var binding2: SheetMainBinding
-    private lateinit var thisContext: Context
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var navController: NavController
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var bottomSheetDialog: BottomSheetDialog
-    private lateinit var bundle: Bundle
+    private lateinit var logo: AppCompatImageView
+    private lateinit var greeting: ComposeView
+    private lateinit var layout: LinearLayoutCompat
+    private lateinit var thisContext: Context
     private var title: String = "Androntainer"
 
     private var targetAppName: String by mutableStateOf("unknown")
@@ -217,38 +232,51 @@ class MainActivity : AndrontainerActivity() {
     private var app = null
 
     override fun initView() {
-        binding0 = ActivityMainBinding.inflate(layoutInflater)
-        binding1 = DialogLicenseBinding.inflate(layoutInflater)
-        binding2 = SheetMainBinding.inflate(layoutInflater)
-
-        val toolbar = MaterialToolbar(me).apply {
-
+        toolbar = MaterialToolbar(
+            me
+        ).apply {
             popupTheme = R.style.ThemeOverlay_Androntainer_NoActionBar_PopupOverlay
-            setBackgroundColor(
-                ContextCompat.getColor(
+            navigationIcon = ContextCompat.getDrawable(
+                me,
+                R.drawable.ic_baseline_menu_24
+            )
+            logo = ContextCompat.getDrawable(
+                me,
+                R.drawable.ic_baseline_androntainer_plat_logo_24
+            )
+            subtitle = targetAppName
+        }
+
+        logo = AppCompatImageView(
+            me
+        ).apply {
+            scaleType = ImageView.ScaleType.CENTER
+            setImageDrawable(
+                ContextCompat.getDrawable(
                     me,
-                    R.color.purple_500
+                    R.drawable.ic_baseline_androntainer_plat_logo_24
                 )
             )
         }
 
-        val logo = AppCompatImageView(me).apply {
-
+        greeting = ComposeView(
+            me
+        ).apply {
+            setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            )
         }
 
-        val compose = ComposeView(me).apply {
-
-        }
-
-        val layout = LinearLayoutCompat(
+        layout = LinearLayoutCompat(
             me
         ).apply {
             orientation = LinearLayoutCompat.VERTICAL
+            fitsSystemWindows = true
             addView(
                 AppBarLayout(
                     me
                 ).apply {
-                    setTheme(R.style.ThemeOverlay_Androntainer_NoActionBar_AppBarOverlay)
+                    setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_ActionBar)
                     addView(
                         toolbar,
                         ViewGroup.LayoutParams(
@@ -267,22 +295,14 @@ class MainActivity : AndrontainerActivity() {
                     me
                 ).apply {
                     addView(
-                        ComposeView(
-                            me
-                        ).apply {
-
-                        },
+                        greeting,
                         ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
                     )
                     addView(
-                        AppCompatImageView(
-                            me
-                        ).apply {
-
-                        },
+                        logo,
                         ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
@@ -298,10 +318,8 @@ class MainActivity : AndrontainerActivity() {
     }
 
     override fun contentView(): View {
-        val root: View = binding0.root
-        toolbar = binding2.toolbar
         setSupportActionBar(toolbar)
-        return root
+        return layout
     }
 
     /**
@@ -309,8 +327,6 @@ class MainActivity : AndrontainerActivity() {
      */
 
     override fun runnable() {
-        val logo: AppCompatImageView = binding0.logo
-        val greeting: ComposeView = binding0.greeting
         val cx = logo.x + logo.width / 2f
         val cy = logo.y + logo.height / 2f
         val startRadius = hypot(logo.width.toFloat(), logo.height.toFloat())
@@ -334,8 +350,8 @@ class MainActivity : AndrontainerActivity() {
     }
 
     override fun postAnim() {
-        binding0.greeting.visibility = View.INVISIBLE
-        binding0.greeting.postDelayed(this, 200)
+        greeting.visibility = View.INVISIBLE
+        greeting.postDelayed(this, 200)
     }
 
     /**
@@ -385,11 +401,6 @@ class MainActivity : AndrontainerActivity() {
      */
 
     override fun initUi() {
-        // Binding View
-        val greeting: ComposeView = binding0.greeting
-        val navView: NavigationView = binding0.navView
-        val navHostFragment =
-            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment?)!!
         // ComposeView layout
         greeting.apply {
             setContent {
@@ -413,31 +424,8 @@ class MainActivity : AndrontainerActivity() {
                 }
             }
         }
-        // Navigation Fragment host BottomSheetDialog
-        bottomSheetDialog = BottomSheetDialog(thisContext, R.style.BottomSheetDialogStyle)
-        bottomSheetDialog.window?.setDimAmount(0f)
-        bottomSheetDialog.setContentView(binding2.root)
 
 
-        // Navigation
-        drawerLayout = binding0.drawerLayout
-        navController = navHostFragment.navController
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home,
-                R.id.nav_gallery,
-                R.id.nav_slideshow,
-                R.id.nav_settings,
-                R.id.nav_dashboard
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
-
-    }
-
-    override fun initBundle() {
-        bundle = Bundle()
     }
 
     override fun setEvent() {
@@ -460,7 +448,7 @@ class MainActivity : AndrontainerActivity() {
 
                 override fun onDestroy(me: BaseActivity, className: String) {
                     super.onDestroy(me, className)
-                    binding0.greeting.removeCallbacks(this@MainActivity)
+                    greeting.removeCallbacks(this@MainActivity)
                 }
             }
         )
@@ -484,19 +472,6 @@ class MainActivity : AndrontainerActivity() {
     }
 
     /**
-     * Bottom Sheet Dialog full screen
-     */
-
-    override fun onStart() {
-        super.onStart()
-        val view: FrameLayout =
-            bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet)!!
-        val behavior = BottomSheetBehavior.from(view)
-        view.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-    }
-
-    /**
      * Create OptionsMenu
      */
 
@@ -515,14 +490,6 @@ class MainActivity : AndrontainerActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    /**
-     * Support navigate up
-     */
-
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
 
     /**
      * Jetpack Compose Layout
@@ -534,7 +501,7 @@ class MainActivity : AndrontainerActivity() {
             title = title,
             targetAppName = targetAppName,
             NavigationOnClick = {
-                drawer()
+
             },
             MenuOnClick = {
                 optionsMenu()
@@ -543,10 +510,10 @@ class MainActivity : AndrontainerActivity() {
 
             },
             SheetOnClick = {
-                sheet()
+
             },
             AppsOnClick = {
-                apps()
+
             },
             SelectOnClick = {
                 select()
@@ -558,7 +525,7 @@ class MainActivity : AndrontainerActivity() {
      * Jetpack Compose layout preview
      */
 
-    @Preview
+    @Preview(showBackground = true)
     @Composable
     fun ActivityMainPreview() {
         AndrontainerTheme {
@@ -566,33 +533,10 @@ class MainActivity : AndrontainerActivity() {
         }
     }
 
-    private fun drawer() {
-        if (drawerLayout.isOpen) {
-            drawerLayout.close()
-        } else {
-            drawerLayout.open()
-        }
-    }
-
     private fun optionsMenu() {
-        sheet()
         toolbar.showOverflowMenu()
     }
 
-    private fun sheet() {
-        if (bottomSheetDialog.isShowing) {
-            bottomSheetDialog.hide()
-        } else {
-            bottomSheetDialog.show()
-        }
-
-
-    }
-
-    private fun apps() {
-        sheet()
-        navigate(R.id.nav_settings)//这里要改成apps页面
-    }
 
     private fun select() {
 
@@ -615,10 +559,6 @@ class MainActivity : AndrontainerActivity() {
             Build.VERSION_CODES.TIRAMISU -> "Android Tiramisu 13.0"
             else -> "unknown"
         }
-    }
-
-    private fun navigate(resId: Int) {
-        navController.navigate(resId, bundle)
     }
 
 
@@ -1172,6 +1112,17 @@ class InAppBillingService : Service() {
     }
 }
 
+sealed class Screen(
+    val route: String,
+    val imageVector: ImageVector,
+    @StringRes val resourceId: Int
+) {
+    object Navigation : Screen(navigation, Icons.TwoTone.Navigation, R.string.menu_navigation)
+    object Launcher : Screen(launcher, Icons.TwoTone.Launch, R.string.menu_launcher)
+    object Home : Screen(home, Icons.TwoTone.Home, R.string.menu_home)
+    object Dashboard : Screen(dashboard, Icons.TwoTone.Dashboard, R.string.menu_dashboard)
+}
+
 class Item(
     val name: String,
     val packageName: String,
@@ -1336,6 +1287,11 @@ fun startLauncher(context: Context) {
 
 const val aidlux: String = "com.aidlux"
 
+const val navigation: String = "navigation"
+const val launcher: String = "launcher"
+const val home: String = "home"
+const val dashboard: String = "dashboard"
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
@@ -1384,7 +1340,8 @@ fun AndrontainerTheme(
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-
+            (view.context as Activity).window.navigationBarColor = colorScheme.primary.toArgb()
+            @Suppress("DEPRECATION")
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
         }
     }
@@ -1407,7 +1364,7 @@ fun WidgetClock() {
     )
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun WidgetClockPreview() {
     WidgetClock()
@@ -1442,7 +1399,7 @@ fun WidgetControl(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun WidgetControlPreview() {
     WidgetControl(
@@ -1476,7 +1433,7 @@ fun WidgetTargetApp(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun WidgetTargetAppPreview() {
     WidgetTargetApp(
@@ -1489,6 +1446,7 @@ fun WidgetTargetAppPreview() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityMain(
     title: String,
@@ -1503,78 +1461,25 @@ fun ActivityMain(
     AppsOnClick: () -> Unit,
     SelectOnClick: () -> Unit,
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val navController = rememberNavController()
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        NavHost(navController = navController, startDestination = "home") {
-            composable("home") {
-                ScreenHome(
-                    title = title,
-                    targetAppName = targetAppName,
-                    targetAppPackageName = targetAppPackageName,
-                    targetAppDescription = targetAppDescription,
-                    targetAppVersionName = targetAppVersionName,
-                    NavigationOnClick = NavigationOnClick,
-                    MenuOnClick = MenuOnClick,
-                    SearchOnClick = SearchOnClick,
-                    SheetOnClick = SheetOnClick,
-                    AppsOnClick = AppsOnClick,
-                    SelectOnClick = SelectOnClick,
-                    onNavigateToApps = { navController.navigate("apps") },
-                )
-            }
-            composable("apps") {
-
-            }
-        }
-
+    val items = listOf(
+        Screen.Navigation,
+        Screen.Launcher,
+        Screen.Home,
+        Screen.Dashboard
+    )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val expandedMenu = remember {
+        mutableStateOf(false)
     }
-}
-
-@Preview
-@Composable
-fun ActivityMainPreview() {
-    AndrontainerTheme {
-        ActivityMain(
-            title = "",
-            targetAppName = "",
-            targetAppPackageName = "",
-            targetAppDescription = "",
-            targetAppVersionName = "",
-            NavigationOnClick = {},
-            MenuOnClick = {},
-            SearchOnClick = {},
-            SheetOnClick = {},
-            AppsOnClick = {},
-            SelectOnClick = {}
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ScreenHome(
-    title: String,
-    targetAppName: String,
-    targetAppPackageName: String,
-    targetAppDescription: String,
-    targetAppVersionName: String,
-    NavigationOnClick: () -> Unit,
-    MenuOnClick: () -> Unit,
-    SearchOnClick: () -> Unit,
-    SheetOnClick: () -> Unit,
-    AppsOnClick: () -> Unit,
-    SelectOnClick: () -> Unit,
-    onNavigateToApps: () -> Unit,
-) {
-    val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
-    val expandedMenu = remember { mutableStateOf(false) }
-    val expandedPowerButton = remember { mutableStateOf(true) }
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(
+                scrollBehavior.nestedScrollConnection
+            ),
         topBar = {
             TopAppBar(
                 title = {
@@ -1587,7 +1492,6 @@ fun ScreenHome(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            //NavigationOnClick()
 
                         }
                     ) {
@@ -1629,12 +1533,7 @@ fun ScreenHome(
                                 Text("抽屉")
                             },
                             onClick = {
-//                                scope.launch {
-//                                    scaffoldState.drawerState.apply {
-//                                        if (isClosed) open() else close()
-//                                    }
-//                                }
-//                                expandedMenu.value = false
+
                             }
                         )
                         DropdownMenuItem(
@@ -1648,14 +1547,51 @@ fun ScreenHome(
                         )
                     }
                 },
+                scrollBehavior = scrollBehavior
             )
         },
         bottomBar = {
-
+            NavigationBar {
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                screen.imageVector,
+                                contentDescription = null
+                            )
+                        },
+                        label = {
+                            Text(
+                                stringResource(
+                                    screen.resourceId
+                                )
+                            )
+                        },
+                        selected = currentDestination?.hierarchy?.any {
+                            it.route == screen.route
+                        } == true,
+                        onClick = {
+                            navController.navigate(
+                                screen.route
+                            ) {
+                                popUpTo(
+                                    navController.graph.findStartDestination().id
+                                ) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToApps,
+                onClick = {
+                   // navController.navigate("apps")
+                },
                 modifier = Modifier.navigationBarsPadding()
             ) {
                 Icon(
@@ -1665,340 +1601,497 @@ fun ScreenHome(
             }
         },
         floatingActionButtonPosition = FabPosition.End,
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
             modifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
         ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.background),
-//                    contentDescription = null,
-//                    modifier = Modifier.fillMaxSize(),
-//                    contentScale = ContentScale.FillBounds
-//                )
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "当前时间",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 5.dp,
-                                bottom = 2.5.dp
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 5.dp
-                            ),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        WidgetClock()
-                    }
-                }
+            composable(Screen.Navigation.route){
 
-                Divider()
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "控制台",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 5.dp,
-                                bottom = 2.5.dp
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 5.dp
-                            ),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        WidgetControl(
-                            NavigationOnClick = {
-                                //NavigationOnClick()
-//                                scope.launch {
-//                                    scaffoldState.drawerState.apply {
-//                                        if (isClosed) open() else close()
-//                                    }
-//                                }
-                            },
-                            MenuOnClick = {
-                                expandedMenu.value = true
-                            },
-                            AppsOnClick = onNavigateToApps,
-                            SearchOnClick = SearchOnClick,
-                            SelectOnClick = SelectOnClick
-                        )
-                    }
-                }
-                Divider()
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                ) {
-                    Text(
-                        text = "目标应用",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 5.dp,
-                                bottom = 2.5.dp
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 5.dp
-                            ),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        WidgetTargetApp(
-                            targetAppName = targetAppName,
-                            targetAppPackageName = targetAppPackageName,
-                            targetAppDescription = targetAppDescription,
-                            targetAppVersionName = targetAppVersionName,
-                            targetAppChecked = {
-                                expandedPowerButton.value = true
-                            },
-                            targetAppUnchecked = {
-                                expandedPowerButton.value = false
-                            }
-                        )
-                    }
-                }
-                Divider()
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "电源",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 5.dp,
-                                bottom = 2.5.dp
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 5.dp
-                            )
-                    ) {
-                        Button(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .padding(end = 2.5.dp),
-                            enabled = expandedPowerButton.value
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ToggleOn,
-                                    contentDescription = null,
-                                    tint = Color.Green
-                                )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(
-                                    text = "ON",
-                                    color = Color.Green
-                                )
-                            }
-                        }
-                        Button(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .padding(start = 2.5.dp),
-                            enabled = expandedPowerButton.value
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ToggleOff,
-                                    contentDescription = null,
-                                    tint = Color.Red
-                                )
-                                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                                Text(
-                                    text = "OFF",
-                                    color = Color.Red
-                                )
-                            }
+            }
+            composable(Screen.Launcher.route){
 
-                        }
-                    }
-                }
-                Divider()
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "设备信息",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 5.dp,
-                                bottom = 2.5.dp
-                            )
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 2.5.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Android,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "sb",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(
-                                    start = 5.dp,
-                                )
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 2.5.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PhoneAndroid,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "sb",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(
-                                    start = 5.dp,
-                                )
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
-                            .padding(
-                                start = 5.dp,
-                                end = 5.dp,
-                                top = 2.5.dp,
-                                bottom = 2.5.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.DesignServices,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "sb",
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(
-                                    start = 5.dp,
-                                )
-                        )
-                    }
-                }
-//                    Card(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(5.dp),
-//                        shape = MaterialTheme.shapes.small.copy(
-//                            CornerSize(percent = 10)
-//                        ),
-//                        backgroundColor = Color(0x99FFFFFF),
-//                        elevation = 0.dp,
-//                    ) {
-//
-//                    }
+            }
+            composable(Screen.Home.route) {
+                ScreenHome(
+                    title = title,
+                    targetAppName = targetAppName,
+                    targetAppPackageName = targetAppPackageName,
+                    targetAppDescription = targetAppDescription,
+                    targetAppVersionName = targetAppVersionName,
+                    NavigationOnClick = NavigationOnClick,
+                    MenuOnClick = MenuOnClick,
+                    SearchOnClick = SearchOnClick,
+                    SheetOnClick = SheetOnClick,
+                    AppsOnClick = AppsOnClick,
+                    SelectOnClick = SelectOnClick,
+                    onNavigateToApps = {
 
-//                    AndroidViewBinding(
-//                        factory = FactoryMainBinding::inflate,
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .padding(innerPadding),
-//                    ) {
-//
-//                    }
-
+                    },
+                )
+            }
+            composable(Screen.Dashboard.route) {
 
             }
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
+@Composable
+fun ActivityMainPreview() {
+    AndrontainerTheme {
+        ActivityMain(
+            title = "",
+            targetAppName = "",
+            targetAppPackageName = "",
+            targetAppDescription = "",
+            targetAppVersionName = "",
+            NavigationOnClick = {},
+            MenuOnClick = {},
+            SearchOnClick = {},
+            SheetOnClick = {},
+            AppsOnClick = {},
+            SelectOnClick = {}
+        )
+    }
+}
+
+@Composable
+fun ScreenHome(
+    title: String,
+    targetAppName: String,
+    targetAppPackageName: String,
+    targetAppDescription: String,
+    targetAppVersionName: String,
+    NavigationOnClick: () -> Unit,
+    MenuOnClick: () -> Unit,
+    SearchOnClick: () -> Unit,
+    SheetOnClick: () -> Unit,
+    AppsOnClick: () -> Unit,
+    SelectOnClick: () -> Unit,
+    onNavigateToApps: () -> Unit,
+) {
+    val scrollState = rememberScrollState()
+    val expandedMenu = remember {
+        mutableStateOf(false)
+    }
+    val expandedPowerButton = remember {
+        mutableStateOf(true)
+    }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "当前时间",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 5.dp,
+                            bottom = 2.5.dp
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 5.dp
+                        ),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    WidgetClock()
+                }
+            }
+            Divider()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "控制台",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 5.dp,
+                            bottom = 2.5.dp
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 5.dp
+                        ),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    WidgetControl(
+                        NavigationOnClick = {
+                            //NavigationOnClick()
+//                                scope.launch {
+//                                    scaffoldState.drawerState.apply {
+//                                        if (isClosed) open() else close()
+//                                    }
+//                                }
+                        },
+                        MenuOnClick = {
+                            expandedMenu.value = true
+                        },
+                        AppsOnClick = onNavigateToApps,
+                        SearchOnClick = SearchOnClick,
+                        SelectOnClick = SelectOnClick
+                    )
+                }
+            }
+            Divider()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+            ) {
+                Text(
+                    text = "目标应用",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 5.dp,
+                            bottom = 2.5.dp
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 5.dp
+                        ),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    WidgetTargetApp(
+                        targetAppName = targetAppName,
+                        targetAppPackageName = targetAppPackageName,
+                        targetAppDescription = targetAppDescription,
+                        targetAppVersionName = targetAppVersionName,
+                        targetAppChecked = {
+                            expandedPowerButton.value = true
+                        },
+                        targetAppUnchecked = {
+                            expandedPowerButton.value = false
+                        }
+                    )
+                }
+            }
+            Divider()
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "电源",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 5.dp,
+                            bottom = 2.5.dp
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 5.dp
+                        )
+                ) {
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(end = 2.5.dp),
+                        enabled = expandedPowerButton.value
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ToggleOn,
+                                contentDescription = null,
+                                tint = Color.Green
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = "ON",
+                                color = Color.Green
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(start = 2.5.dp),
+                        enabled = expandedPowerButton.value
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ToggleOff,
+                                contentDescription = null,
+                                tint = Color.Red
+                            )
+                            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                            Text(
+                                text = "OFF",
+                                color = Color.Red
+                            )
+                        }
+
+                    }
+                }
+            }
+            Divider()
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "设备信息",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 5.dp,
+                            bottom = 2.5.dp
+                        )
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 2.5.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Android,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "sb",
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(
+                                start = 5.dp,
+                            )
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 2.5.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PhoneAndroid,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "sb",
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(
+                                start = 5.dp,
+                            )
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(
+                            start = 5.dp,
+                            end = 5.dp,
+                            top = 2.5.dp,
+                            bottom = 2.5.dp
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.DesignServices,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "sb",
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(
+                                start = 5.dp,
+                            )
+                    )
+                }
+            }
+
+        }
+    }
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//    ) {
+////                Image(
+////                    painter = painterResource(id = R.drawable.background),
+////                    contentDescription = null,
+////                    modifier = Modifier.fillMaxSize(),
+////                    contentScale = ContentScale.FillBounds
+////                )
+//
+//    }
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        topBar = {
+//            TopAppBar(
+//                title = {
+//                    Column {
+//                        Text(text = title)
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth(),
+//                navigationIcon = {
+//                    IconButton(
+//                        onClick = {
+//                            //NavigationOnClick()
+//
+//                        }
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Menu,
+//                            contentDescription = null
+//                        )
+//                    }
+//                },
+//                actions = {
+//                    IconButton(
+//                        onClick = {
+//                            expandedMenu.value = true
+//                        }
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Filled.MoreVert,
+//                            contentDescription = null
+//                        )
+//                    }
+//                    DropdownMenu(
+//                        expanded = expandedMenu.value,
+//                        onDismissRequest = {
+//                            expandedMenu.value = false
+//                        },
+//                    ) {
+//                        DropdownMenuItem(
+//                            text = {
+//                                Text("分享")
+//                            },
+//                            onClick = {
+//
+//                                expandedMenu.value = false
+//                            }
+//                        )
+//                        Divider()
+//                        DropdownMenuItem(
+//                            text = {
+//                                Text("抽屉")
+//                            },
+//                            onClick = {
+////                                scope.launch {
+////                                    scaffoldState.drawerState.apply {
+////                                        if (isClosed) open() else close()
+////                                    }
+////                                }
+////                                expandedMenu.value = false
+//                            }
+//                        )
+//                        DropdownMenuItem(
+//                            text = {
+//                                Text("更多")
+//                            },
+//                            onClick = {
+//                                expandedMenu.value = false
+//                                MenuOnClick()
+//                            }
+//                        )
+//                    }
+//                },
+//            )
+//        },
+//        bottomBar = {
+//
+//        },
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                onClick = onNavigateToApps,
+//                modifier = Modifier.navigationBarsPadding()
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Filled.ArrowForward,
+//                    contentDescription = null
+//                )
+//            }
+//        },
+//        floatingActionButtonPosition = FabPosition.End,
+//    ) { innerPadding ->
+//
+//    }
+}
+
+@Preview(showBackground = true)
 @Composable
 fun ScreenHomePreview() {
     AndrontainerTheme {
@@ -2024,7 +2117,7 @@ fun ScreenApps() {
 
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ScreenAppsPreview() {
     ScreenApps()
