@@ -17,6 +17,7 @@ import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.view.*
+import android.view.ViewGroup.LayoutParams
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
@@ -42,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -86,7 +86,15 @@ import kotlinx.coroutines.Runnable
 import kotlin.math.hypot
 
 
+/**
+ ***************************************************************************************************
+ * Abstract 抽象类
+ ***************************************************************************************************
+ */
+
 abstract class AndrontainerApplication : BaseApp<Androntainer>() {
+
+    private val context: BaseApp<Androntainer> = me
 
     override fun init() {
         setOnSDKInitializedCallBack {
@@ -100,18 +108,23 @@ abstract class AndrontainerApplication : BaseApp<Androntainer>() {
         initSdk()
     }
 
+    protected val app: BaseApp<Androntainer> = context
     abstract fun initSdk()
 }
 
 abstract class AndrontainerActivity : BaseActivity(), Runnable {
 
+    // 获取上下文
+    private val context: BaseActivity = me
+
+    // 布局
     override fun resetContentView(): View? {
         initView()
+        setSupportActionBar(actionBar())
         return contentView()
     }
 
     override fun initViews() {
-        initContext()
         initServices()
         initSystemBar()
         initUi()
@@ -130,6 +143,7 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
         runnable()
     }
 
+    // 服务启动相关
     protected val mConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(
             className: ComponentName,
@@ -143,11 +157,16 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
         }
     }
 
+    // 供子类使用的上下文
+    protected val viewContext: BaseActivity = context
+    protected val thisContext: BaseActivity = context
+
+    // 需要子类重写的方法
     abstract fun initView()
     abstract fun contentView(): View?
+    abstract fun actionBar(): Toolbar?
     abstract fun runnable()
     abstract fun postAnim()
-    abstract fun initContext()
     abstract fun initServices()
     abstract fun initData(parameter: JumpParameter?)
     abstract fun initSystemBar()
@@ -156,24 +175,38 @@ abstract class AndrontainerActivity : BaseActivity(), Runnable {
 }
 
 abstract class LibraryActivity : BaseActivity() {
-    override fun initViews() {
 
+    private val context: BaseActivity = me
+
+    override fun resetContentView(): View {
+        return View(me)
+    }
+
+    override fun initViews() {
+        create()
     }
 
     override fun initDatas(parameter: JumpParameter?) {
-
+        data(parameter)
     }
 
     override fun setEvents() {
-
     }
 
+    protected val thisContext: BaseActivity = context
+
+    abstract fun create()
+    abstract fun data(parameter: JumpParameter?)
 }
 
 abstract class FixedActivity : BaseActivity() {
 
-    override fun resetContentView(): View {
-        return super.resetContentView()
+    private val context: BaseActivity = me
+
+    override fun resetContentView(): View? {
+        initView()
+        setSupportActionBar(actionBar())
+        return contentView()
     }
 
     override fun initViews() {
@@ -188,6 +221,11 @@ abstract class FixedActivity : BaseActivity() {
 
     }
 
+    protected val thisContext: BaseActivity = context
+
+    abstract fun initView()
+    abstract fun contentView(): View?
+    abstract fun actionBar(): Toolbar?
 
 }
 
@@ -204,15 +242,20 @@ abstract class AndrontainerFragment<me : AndrontainerActivity> : BaseFragment<me
     override fun setEvents() {
 
     }
-
 }
+
+/**
+ ***************************************************************************************************
+ * Activity 用户界面
+ ***************************************************************************************************
+ */
 
 class Androntainer : AndrontainerApplication() {
 
     override fun initSdk() {
-        initDynamicColors(me)
-        initDialogX(me)
-        initTaskbar(me)
+        initDynamicColors(app)
+        initDialogX(app)
+        initTaskbar(app)
     }
 }
 
@@ -222,45 +265,39 @@ class MainActivity : AndrontainerActivity() {
     private lateinit var logo: AppCompatImageView
     private lateinit var greeting: ComposeView
     private lateinit var layout: LinearLayoutCompat
-    private lateinit var thisContext: Context
-    private var title: String = "Androntainer"
 
     private var targetAppName: String by mutableStateOf("unknown")
     private var targetPackageName: String by mutableStateOf("unknown")
     private var targetDescription: String by mutableStateOf("unknown")
+
     private var androidVersion: String = "unknown"
-    private var app = null
 
     override fun initView() {
         toolbar = MaterialToolbar(
-            me
+            viewContext
         ).apply {
             popupTheme = R.style.ThemeOverlay_Androntainer_NoActionBar_PopupOverlay
             navigationIcon = ContextCompat.getDrawable(
-                me,
+                viewContext,
                 R.drawable.ic_baseline_menu_24
-            )
-            logo = ContextCompat.getDrawable(
-                me,
-                R.drawable.ic_baseline_androntainer_plat_logo_24
             )
             subtitle = targetAppName
         }
 
         logo = AppCompatImageView(
-            me
+            viewContext
         ).apply {
             scaleType = ImageView.ScaleType.CENTER
             setImageDrawable(
                 ContextCompat.getDrawable(
-                    me,
+                    viewContext,
                     R.drawable.ic_baseline_androntainer_plat_logo_24
                 )
             )
         }
 
         greeting = ComposeView(
-            me
+            viewContext
         ).apply {
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
@@ -268,58 +305,61 @@ class MainActivity : AndrontainerActivity() {
         }
 
         layout = LinearLayoutCompat(
-            me
+            viewContext
         ).apply {
             orientation = LinearLayoutCompat.VERTICAL
             fitsSystemWindows = true
             addView(
                 AppBarLayout(
-                    me
+                    viewContext
                 ).apply {
                     setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_ActionBar)
                     addView(
                         toolbar,
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        LayoutParams(
+                            LayoutParams.MATCH_PARENT,
+                            LayoutParams.WRAP_CONTENT
                         )
                     )
                 },
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.WRAP_CONTENT
                 )
             )
             addView(
                 CoordinatorLayout(
-                    me
+                    viewContext
                 ).apply {
                     addView(
                         greeting,
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+                        LayoutParams(
+                            LayoutParams.MATCH_PARENT,
+                            LayoutParams.MATCH_PARENT
                         )
                     )
                     addView(
                         logo,
-                        ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+                        LayoutParams(
+                            LayoutParams.MATCH_PARENT,
+                            LayoutParams.MATCH_PARENT
                         )
                     )
                 },
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
+                LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT
                 )
             )
         }
     }
 
     override fun contentView(): View {
-        setSupportActionBar(toolbar)
         return layout
+    }
+
+    override fun actionBar(): Toolbar {
+        return toolbar
     }
 
     /**
@@ -355,14 +395,6 @@ class MainActivity : AndrontainerActivity() {
     }
 
     /**
-     * Loading Context
-     */
-
-    override fun initContext() {
-        thisContext = me
-    }
-
-    /**
      * Loading background services
      */
 
@@ -373,7 +405,8 @@ class MainActivity : AndrontainerActivity() {
     }
 
     override fun initData(parameter: JumpParameter?) {
-        title = getString(R.string.app_name)
+
+
         targetAppName = "App"
         androidVersion = getAndroidVersion()
     }
@@ -433,7 +466,9 @@ class MainActivity : AndrontainerActivity() {
             object : GlobalLifeCircleListener() {
                 override fun onCreate(me: BaseActivity, className: String) {
                     super.onCreate(me, className)
-
+                    when (me) {
+                        FixedPlay() -> finish()
+                    }
                 }
 
                 override fun onResume(me: BaseActivity, className: String) {
@@ -441,15 +476,17 @@ class MainActivity : AndrontainerActivity() {
 
                 }
 
-                override fun onPause(me: BaseActivity, className: String) {
-                    super.onPause(me, className)
-
-                }
-
                 override fun onDestroy(me: BaseActivity, className: String) {
                     super.onDestroy(me, className)
-                    greeting.removeCallbacks(this@MainActivity)
+                    when (me) {
+                        MainActivity() -> greeting.removeCallbacks(this@MainActivity)
+                    }
                 }
+
+                override fun onStart(activity: BaseActivity?, className: String?) {
+                    super.onStart(activity, className)
+                }
+
             }
         )
         AppManager.setOnActivityStatusChangeListener(
@@ -498,7 +535,7 @@ class MainActivity : AndrontainerActivity() {
     @Composable
     private fun Layout() {
         MainActivityContentView(
-            title = title,
+            title = "title",
             targetAppName = targetAppName,
             NavigationOnClick = {
 
@@ -600,30 +637,31 @@ open class FakeSignature : AppCompatActivity() {
     }
 }
 
-class FixedPlay : AppCompatActivity() {
+class FixedPlay : LibraryActivity() {
 
-    private var mPackageManager: PackageManager? = null
-
+    private lateinit var mPackageManager: PackageManager
     private val thisPackage = AppUtils.getAppPackageName()
     private var mode: String? = "r2"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun create() {
         mPackageManager = packageManager
-        go()
-        finish()
     }
 
-    @SuppressLint("WrongConstant")
-    fun go() {
-        val read = PreferenceManager.getDefaultSharedPreferences(this@FixedPlay)
+    override fun data(parameter: JumpParameter?) {
+        go()
+    }
+
+    private fun go() {
+        val read = PreferenceManager.getDefaultSharedPreferences(thisContext)
         val app = read.getString("app", "")
         val className = read.getString("class", "")
-        mode = read.getString("mode", "r2")
+        val perMode: String? = read.getString("mode", "r2")
+        if (perMode != "r2") {
+            mode = perMode
+        }
         if (app!!.isNotEmpty() && app != thisPackage) {
             when (mode) {
                 "r2" -> {
-                    Log.w("MainActivity mode2", mode!!)
                     val intent = packageManager!!.getLaunchIntentForPackage(app)
                     intent?.let {
                         startActivity(it)
@@ -637,11 +675,11 @@ class FixedPlay : AppCompatActivity() {
                     val intent: Intent? = packageManager!!.getLaunchIntentForPackage(app)
                     intent!!.flags =
                         Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    this.startActivity(intent)
+                    startActivity(intent)
                 }
             }
         } else {
-            val intent = Intent(this@FixedPlay, FixedSettings::class.java)
+            val intent = Intent(thisContext, FixedSettings().javaClass)
             startActivity(intent)
         }
     }
@@ -649,7 +687,7 @@ class FixedPlay : AppCompatActivity() {
 
 class FixedSettings : AppCompatActivity() {
 
-    private var mPackageManager: PackageManager? = null
+    private lateinit var mPackageManager: PackageManager
     private var _binding: ActivityLauncherSettingsBinding? = null
     private val binding get() = _binding!!
     private var _mode = ""
@@ -762,14 +800,51 @@ class SelectOne : AppCompatActivity() {
     private var _binding: ActivityApplistBinding? = null
     private val binding get() = _binding!!
     private val list: MutableList<Item?> = ArrayList()
-    private var listView: ListView? = null
-    private var progressBar: ProgressBar? = null
+    private lateinit var listView: ListView
+    private lateinit var progressBar: ProgressBar
     private var _mode: String? = null
     private var _uri: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityApplistBinding.inflate(layoutInflater)
+
+        val layout = LinearLayoutCompat(this@SelectOne).apply {
+            orientation = LinearLayoutCompat.VERTICAL
+            addView(
+                AppBarLayout(this@SelectOne).apply {
+                    setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_ActionBar)
+                    addView(
+                        MaterialToolbar(this@SelectOne).apply {
+
+                        },
+                        LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                    )
+                },
+                LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.WRAP_CONTENT
+                )
+            )
+            addView(
+                ProgressBar(this@SelectOne).apply {
+
+                },
+                LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.WRAP_CONTENT
+                )
+            )
+            addView(
+                ListView(this@SelectOne).apply {
+
+                },
+                LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT
+                )
+            )
+        }
 
         setContentView(binding.root)
         progressBar = binding.progressBar
@@ -850,7 +925,11 @@ class Google : FakeSignature() {
     }
 }
 
-//class Launcher : FixedPlay()
+/**
+ ***************************************************************************************************
+ * Fragment 用户界面
+ ***************************************************************************************************
+ */
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -888,7 +967,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
         fixed?.setOnPreferenceClickListener {
-            anyLauncher(requireActivity())
+            launcherSettings(requireActivity())
             true
         }
         default?.setOnPreferenceClickListener {
@@ -898,230 +977,267 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 }
 
+/**
+ ***************************************************************************************************
+ * Services 后台服务
+ ***************************************************************************************************
+ */
+
 class InAppBillingService : Service() {
 
-    private val tag = "FakeInAppStore"
+    private val tag: String = "FakeInAppStore"
 
-    private val mInAppBillingService: IInAppBillingService.Stub =
-        object : IInAppBillingService.Stub() {
-            override fun isBillingSupported(
-                apiVersion: Int,
-                packageName: String,
-                type: String
-            ): Int {
-                return isBillingSupportedV7(apiVersion, packageName, type, Bundle())
-            }
+    private lateinit var mInAppBillingService: IInAppBillingService.Stub
 
-            override fun getSkuDetails(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                skusBundle: Bundle
-            ): Bundle {
-                return getSkuDetailsV10(apiVersion, packageName, type, skusBundle, Bundle())
-            }
+    private fun stub() {
+        mInAppBillingService =
+            object : IInAppBillingService.Stub() {
+                override fun isBillingSupported(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String
+                ): Int {
+                    return isBillingSupportedV7(apiVersion, packageName, type, Bundle())
+                }
 
-            override fun getBuyIntent(
-                apiVersion: Int,
-                packageName: String,
-                sku: String,
-                type: String,
-                developerPayload: String
-            ): Bundle {
-                return getBuyIntentV6(
-                    apiVersion,
-                    packageName,
-                    sku,
-                    type,
-                    developerPayload,
-                    Bundle()
-                )
-            }
+                override fun getSkuDetails(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    skusBundle: Bundle
+                ): Bundle {
+                    return getSkuDetailsV10(apiVersion, packageName, type, skusBundle, Bundle())
+                }
 
-            override fun getPurchases(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                continuationToken: String
-            ): Bundle {
-                return getPurchasesV6(apiVersion, packageName, type, continuationToken, Bundle())
-            }
+                override fun getBuyIntent(
+                    apiVersion: Int,
+                    packageName: String,
+                    sku: String,
+                    type: String,
+                    developerPayload: String
+                ): Bundle {
+                    return getBuyIntentV6(
+                        apiVersion,
+                        packageName,
+                        sku,
+                        type,
+                        developerPayload,
+                        Bundle()
+                    )
+                }
 
-            override fun consumePurchase(
-                apiVersion: Int,
-                packageName: String,
-                purchaseToken: String
-            ): Int {
-                return consumePurchaseV9(
-                    apiVersion,
-                    packageName,
-                    purchaseToken,
-                    Bundle()
-                ).getInt("RESPONSE_CODE", 8)
-            }
+                override fun getPurchases(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    continuationToken: String
+                ): Bundle {
+                    return getPurchasesV6(
+                        apiVersion,
+                        packageName,
+                        type,
+                        continuationToken,
+                        Bundle()
+                    )
+                }
 
-            override fun getBuyIntentToReplaceSkus(
-                apiVersion: Int,
-                packageName: String,
-                oldSkus: List<String>,
-                newSku: String,
-                type: String,
-                developerPayload: String
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "getBuyIntentToReplaceSkus($apiVersion, $packageName, $newSku, $type, $developerPayload)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 4)
-                return data
-            }
+                override fun consumePurchase(
+                    apiVersion: Int,
+                    packageName: String,
+                    purchaseToken: String
+                ): Int {
+                    return consumePurchaseV9(
+                        apiVersion,
+                        packageName,
+                        purchaseToken,
+                        Bundle()
+                    ).getInt("RESPONSE_CODE", 8)
+                }
 
-            override fun getBuyIntentV6(
-                apiVersion: Int,
-                packageName: String,
-                sku: String,
-                type: String,
-                developerPayload: String,
-                extras: Bundle
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "getBuyIntent($apiVersion, $packageName, $sku, $type, $developerPayload)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 4)
-                return data
-            }
+                override fun getBuyIntentToReplaceSkus(
+                    apiVersion: Int,
+                    packageName: String,
+                    oldSkus: List<String>,
+                    newSku: String,
+                    type: String,
+                    developerPayload: String
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "getBuyIntentToReplaceSkus($apiVersion, $packageName, $newSku, $type, $developerPayload)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 4)
+                    return data
+                }
 
-            override fun getPurchasesV6(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                continuationToken: String,
-                extras: Bundle
-            ): Bundle {
-                return getPurchasesV9(apiVersion, packageName, type, continuationToken, extras)
-            }
+                override fun getBuyIntentV6(
+                    apiVersion: Int,
+                    packageName: String,
+                    sku: String,
+                    type: String,
+                    developerPayload: String,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "getBuyIntent($apiVersion, $packageName, $sku, $type, $developerPayload)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 4)
+                    return data
+                }
 
-            override fun isBillingSupportedV7(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                extras: Bundle
-            ): Int {
-                Log.d(
-                    tag,
-                    "isBillingSupported($apiVersion, $packageName, $type)"
-                )
-                return 0
-            }
+                override fun getPurchasesV6(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    continuationToken: String,
+                    extras: Bundle
+                ): Bundle {
+                    return getPurchasesV9(apiVersion, packageName, type, continuationToken, extras)
+                }
 
-            override fun getPurchasesV9(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                continuationToken: String,
-                extras: Bundle
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "getPurchases($apiVersion, $packageName, $type, $continuationToken)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 0)
-                data.putStringArrayList("INAPP_PURCHASE_ITEM_LIST", ArrayList())
-                data.putStringArrayList("INAPP_PURCHASE_DATA_LIST", ArrayList())
-                data.putStringArrayList("INAPP_DATA_SIGNATURE_LIST", ArrayList())
-                return data
-            }
+                override fun isBillingSupportedV7(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    extras: Bundle
+                ): Int {
+                    Log.d(
+                        tag,
+                        "isBillingSupported($apiVersion, $packageName, $type)"
+                    )
+                    return 0
+                }
 
-            override fun consumePurchaseV9(
-                apiVersion: Int,
-                packageName: String,
-                purchaseToken: String,
-                extras: Bundle
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "consumePurchase($apiVersion, $packageName, $purchaseToken)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 8)
-                return data
-            }
+                override fun getPurchasesV9(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    continuationToken: String,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "getPurchases($apiVersion, $packageName, $type, $continuationToken)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 0)
+                    data.putStringArrayList("INAPP_PURCHASE_ITEM_LIST", ArrayList())
+                    data.putStringArrayList("INAPP_PURCHASE_DATA_LIST", ArrayList())
+                    data.putStringArrayList("INAPP_DATA_SIGNATURE_LIST", ArrayList())
+                    return data
+                }
 
-            override fun getPriceChangeConfirmationIntent(
-                apiVersion: Int,
-                packageName: String,
-                sku: String,
-                type: String,
-                extras: Bundle
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "getPriceChangeConfirmationIntent($apiVersion, $packageName, $sku, $type)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 4)
-                return data
-            }
+                override fun consumePurchaseV9(
+                    apiVersion: Int,
+                    packageName: String,
+                    purchaseToken: String,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "consumePurchase($apiVersion, $packageName, $purchaseToken)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 8)
+                    return data
+                }
 
-            override fun getSkuDetailsV10(
-                apiVersion: Int,
-                packageName: String,
-                type: String,
-                skuBundle: Bundle,
-                extras: Bundle
-            ): Bundle {
-                Log.d(tag, "getSkuDetails($apiVersion, $packageName, $type)")
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 0)
-                data.putStringArrayList("DETAILS_LIST", ArrayList())
-                return data
-            }
+                override fun getPriceChangeConfirmationIntent(
+                    apiVersion: Int,
+                    packageName: String,
+                    sku: String,
+                    type: String,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "getPriceChangeConfirmationIntent($apiVersion, $packageName, $sku, $type)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 4)
+                    return data
+                }
 
-            override fun acknowledgePurchase(
-                apiVersion: Int,
-                packageName: String,
-                purchaseToken: String,
-                extras: Bundle
-            ): Bundle {
-                Log.d(
-                    tag,
-                    "acknowledgePurchase($apiVersion, $packageName, $purchaseToken)"
-                )
-                val data = Bundle()
-                data.putInt("RESPONSE_CODE", 8)
-                return data
-            }
+                override fun getSkuDetailsV10(
+                    apiVersion: Int,
+                    packageName: String,
+                    type: String,
+                    skuBundle: Bundle,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(tag, "getSkuDetails($apiVersion, $packageName, $type)")
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 0)
+                    data.putStringArrayList("DETAILS_LIST", ArrayList())
+                    return data
+                }
 
-            @Throws(RemoteException::class)
-            override fun onTransact(code: Int, data: Parcel, reply: Parcel?, flags: Int): Boolean {
-                if (super.onTransact(code, data, reply, flags)) return true
-                Log.d(
-                    tag,
-                    "onTransact [unknown]: $code, $data, $flags"
-                )
-                return false
+                override fun acknowledgePurchase(
+                    apiVersion: Int,
+                    packageName: String,
+                    purchaseToken: String,
+                    extras: Bundle
+                ): Bundle {
+                    Log.d(
+                        tag,
+                        "acknowledgePurchase($apiVersion, $packageName, $purchaseToken)"
+                    )
+                    val data = Bundle()
+                    data.putInt("RESPONSE_CODE", 8)
+                    return data
+                }
+
+                @Throws(RemoteException::class)
+                override fun onTransact(
+                    code: Int,
+                    data: Parcel,
+                    reply: Parcel?,
+                    flags: Int
+                ): Boolean {
+                    if (super.onTransact(code, data, reply, flags)) return true
+                    Log.d(
+                        tag,
+                        "onTransact [unknown]: $code, $data, $flags"
+                    )
+                    return false
+                }
             }
-        }
+    }
+
 
     override fun onBind(intent: Intent?): IBinder {
+        stub()
         return mInAppBillingService
     }
 }
+
+/**
+ ***************************************************************************************************
+ * Class 类
+ ***************************************************************************************************
+ */
+
+/**
+ * 导航栏配置
+ */
 
 sealed class Screen(
     val route: String,
     val imageVector: ImageVector,
     @StringRes val resourceId: Int
 ) {
-    object Navigation : Screen(navigation, Icons.TwoTone.Navigation, R.string.menu_navigation)
-    object Launcher : Screen(launcher, Icons.TwoTone.Launch, R.string.menu_launcher)
-    object Home : Screen(home, Icons.TwoTone.Home, R.string.menu_home)
-    object Dashboard : Screen(dashboard, Icons.TwoTone.Dashboard, R.string.menu_dashboard)
+    object Navigation : Screen(routeNavigation, Icons.TwoTone.Navigation, R.string.menu_navigation)
+    object Launcher : Screen(routeLauncher, Icons.TwoTone.Launch, R.string.menu_launcher)
+    object Home : Screen(routeHome, Icons.TwoTone.Home, R.string.menu_home)
+    object Dashboard : Screen(routeDashboard, Icons.TwoTone.Dashboard, R.string.menu_dashboard)
 }
+
+/**
+ * 选项配置
+ */
 
 class Item(
     val name: String,
@@ -1129,6 +1245,10 @@ class Item(
     val className: String,
     val appIcon: Drawable
 )
+
+/**
+ * 选项适配器
+ */
 
 class ItemAdapter(
     context: Context?,
@@ -1187,6 +1307,9 @@ class ItemAdapter(
     }
 }
 
+/**
+ * 加载动态颜色
+ */
 
 fun initDynamicColors(application: Application) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
@@ -1196,6 +1319,10 @@ fun initDynamicColors(application: Application) {
         }
     }
 }
+
+/**
+ * 初始化DialogX
+ */
 
 fun initDialogX(application: Application) {
     DialogX.init(application)
@@ -1210,6 +1337,10 @@ fun initDialogX(application: Application) {
     DialogX.useHaptic = true
 }
 
+/**
+ * 初始化任务栏
+ */
+
 fun initTaskbar(application: Application) {
     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -1222,6 +1353,10 @@ fun initTaskbar(application: Application) {
         Taskbar.setEnabled(application, false)
     }
 }
+
+/**
+ * 布局代码入口
+ */
 
 @Composable
 fun MainActivityContentView(
@@ -1275,31 +1410,45 @@ fun selectLauncher(context: Context) {
     context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
 }
 
-fun anyLauncher(context: Context) {
+fun launcherSettings(context: Context) {
     val intent = Intent(context, FixedSettings().javaClass)
     context.startActivity(intent)
 }
+
+/**
+ * 打开桌面
+ */
 
 fun startLauncher(context: Context) {
     val intent = Intent(context, FixedPlay().javaClass)
     context.startActivity(intent)
 }
 
+/**
+ ***************************************************************************************************
+ * 资源
+ ***************************************************************************************************
+ */
+
+// 目标应用包名配置
 const val aidlux: String = "com.aidlux"
+const val termux: String = ""
 
-const val navigation: String = "navigation"
-const val launcher: String = "launcher"
-const val home: String = "home"
-const val dashboard: String = "dashboard"
+// 导航路由配置
+const val routeNavigation: String = "navigation"
+const val routeLauncher: String = "launcher"
+const val routeHome: String = "home"
+const val routeDashboard: String = "dashboard"
 
+// 颜色
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
-
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+// 样式
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -1310,18 +1459,21 @@ val Typography = Typography(
     )
 )
 
-private val DarkColorScheme = darkColorScheme(
+// 深色主题
+val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
-private val LightColorScheme = lightColorScheme(
+// 浅色主题
+val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
 )
 
+// 应用主题配置
 @Composable
 fun AndrontainerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -1461,7 +1613,6 @@ fun ActivityMain(
     AppsOnClick: () -> Unit,
     SelectOnClick: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val navController = rememberNavController()
     val items = listOf(
         Screen.Navigation,
@@ -1471,99 +1622,23 @@ fun ActivityMain(
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val expandedMenu = remember {
-        mutableStateOf(false)
-    }
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(
-                scrollBehavior.nestedScrollConnection
-            ),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(text = title)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = null
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            expandedMenu.value = true
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = null
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expandedMenu.value,
-                        onDismissRequest = {
-                            expandedMenu.value = false
-                        },
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text("分享")
-                            },
-                            onClick = {
-
-                                expandedMenu.value = false
-                            }
-                        )
-                        Divider()
-                        DropdownMenuItem(
-                            text = {
-                                Text("抽屉")
-                            },
-                            onClick = {
-
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text("更多")
-                            },
-                            onClick = {
-                                expandedMenu.value = false
-                                MenuOnClick()
-                            }
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        },
+            .fillMaxSize(),
         bottomBar = {
             NavigationBar {
                 items.forEach { screen ->
                     NavigationBarItem(
                         icon = {
                             Icon(
-                                screen.imageVector,
+                                imageVector = screen.imageVector,
                                 contentDescription = null
                             )
                         },
                         label = {
                             Text(
                                 stringResource(
-                                    screen.resourceId
+                                    id = screen.resourceId
                                 )
                             )
                         },
@@ -1572,7 +1647,7 @@ fun ActivityMain(
                         } == true,
                         onClick = {
                             navController.navigate(
-                                screen.route
+                                route = screen.route
                             ) {
                                 popUpTo(
                                     navController.graph.findStartDestination().id
@@ -1587,19 +1662,19 @@ fun ActivityMain(
                 }
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                   // navController.navigate("apps")
-                },
-                modifier = Modifier.navigationBarsPadding()
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowForward,
-                    contentDescription = null
-                )
-            }
-        },
+//        floatingActionButton = {
+//            FloatingActionButton(
+//                onClick = {
+//                   // navController.navigate("apps")
+//                },
+//                modifier = Modifier.navigationBarsPadding()
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Filled.ArrowForward,
+//                    contentDescription = null
+//                )
+//            }
+//        },
         floatingActionButtonPosition = FabPosition.End,
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
@@ -1610,10 +1685,10 @@ fun ActivityMain(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(Screen.Navigation.route){
+            composable(Screen.Navigation.route) {
 
             }
-            composable(Screen.Launcher.route){
+            composable(Screen.Launcher.route) {
 
             }
             composable(Screen.Home.route) {

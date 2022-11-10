@@ -2,8 +2,8 @@
   <library name="Gradle: androidx.test:annotation:1.0.0@aar">
     <CLASSES>
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d315a2dd359f412e0179871fc30d3af8/transformed/annotation-1.0.0/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d7c0efc6fa3d78599a705153305ad774/transformed/annotation-1.0.0/AndroidManifest.xml" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d7c0efc6fa3d78599a705153305ad774/transformed/annotation-1.0.0/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/2fa873d51dacfec6c14670cbd26a635a/transformed/annotation-1.0.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2fa873d51dacfec6c14670cbd26a635a/transformed/annotation-1.0.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

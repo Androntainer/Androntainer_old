@@ -46,7 +46,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".application.fixedplay.App.SelectOne"
+            android:name=".SelectOne"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.tumuyan.applist" />
@@ -55,7 +55,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".application.fixedplay.FixedSettings"
+            android:name=".FixedSettings"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,9 +63,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Launcher"
-            android:exported="false" />
+
 
         <service
             android:name=".InAppBillingService"
