@@ -70,6 +70,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.preference.*
 import com.android.vending.billing.IInAppBillingService
 import com.blankj.utilcode.util.AppUtils
+import com.blankj.utilcode.util.LogUtils.a
 import com.farmerbb.taskbar.lib.Taskbar
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
@@ -89,11 +90,101 @@ import java.io.File
 import kotlin.math.hypot
 
 
+class Main : BaseApp<Main>(){
+
+    private val context: BaseApp<Main> = me
+
+    override fun init() {
+        setOnSDKInitializedCallBack {
+            Androntainer.MainApp.launcher(context)
+            log("The SDK has been loaded")
+        }
+        setOnCrashListener(object : OnBugReportListener() {
+            override fun onCrash(e: Exception, crashLogFile: File): Boolean {
+                if (AppManager.getInstance().activeActivity == null || !AppManager.getInstance().activeActivity.isActive) {
+                    return false
+                }
+
+
+                AlertDialog.Builder(AppManager.getInstance().activeActivity)
+                    .setTitle("Ops！发生了一次崩溃！")
+                    .setMessage("您是否愿意帮助我们改进程序以修复此Bug？")
+                    .setPositiveButton("愿意") { _, _ ->
+                        val url = crashLogFile.absolutePath
+                        toast("我真的会谢")
+                    }
+                    .setNegativeButton("不了") { _, _ ->
+                        toast("抱歉打扰了")
+                    }
+                    .setCancelable(false)
+                    .create()
+                    .show()
+
+                return false
+            }
+        })
+    }
+
+    override fun initSDKs() {
+        super.initSDKs()
+        Androntainer.MainApp.initSDK(context)
+    }
+
+    class Androntainer{
+
+        class MainApp{
+            companion object{
+                fun initSDK(context: Context){
+
+                }
+
+                fun launcher(context: Context){
+                    val intent = Intent(context, MainActivity1().javaClass)
+                    context.startActivity(intent)
+                }
+            }
+        }
+
+        class Launcher : BaseActivity(){
+            override fun initViews() {
+                TODO("Not yet implemented")
+            }
+
+            override fun initDatas(parameter: JumpParameter?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun setEvents() {
+                TODO("Not yet implemented")
+            }
+
+        }
+
+        class MainActivity1 : BaseActivity(){
+
+            override fun initViews() {
+                TODO("Not yet implemented")
+            }
+
+            override fun initDatas(parameter: JumpParameter?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun setEvents() {
+                TODO("Not yet implemented")
+            }
+
+
+        }
+    }
+}
+
 /**
  ***************************************************************************************************
  * Abstract 抽象类
  ***************************************************************************************************
  */
+
 
 abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 
@@ -116,19 +207,19 @@ abstract class AndrontainerApplication : BaseApp<Androntainer>() {
                 }
 
 
-                val builder = AlertDialog.Builder(AppManager.getInstance().activeActivity)
-                builder.setTitle("Ops！发生了一次崩溃！")
-                builder.setMessage("您是否愿意帮助我们改进程序以修复此Bug？")
-                builder.setPositiveButton("愿意") { _, _ ->
+                AlertDialog.Builder(AppManager.getInstance().activeActivity)
+                .setTitle("Ops！发生了一次崩溃！")
+                .setMessage("您是否愿意帮助我们改进程序以修复此Bug？")
+                .setPositiveButton("愿意") { _, _ ->
                     val url = crashLogFile.absolutePath
                     toast("我真的会谢")
                 }
-                builder.setNegativeButton("不了") { _, _ ->
+                .setNegativeButton("不了") { _, _ ->
                     toast("抱歉打扰了")
                 }
-                builder.setCancelable(false)
-                val dialog = builder.create()
-                dialog.show()
+                .setCancelable(false)
+                .create()
+                .show()
 
                 return false
             }
@@ -291,7 +382,7 @@ class Androntainer : AndrontainerApplication() {
     }
 }
 
-class MainActivity : AndrontainerActivity() {
+open class MainActivity : AndrontainerActivity() {
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var logo: AppCompatImageView
@@ -954,15 +1045,6 @@ class SelectOne : AppCompatActivity() {
         _binding = null
     }
 }
-
-//@RequiresApi(Build.VERSION_CODES.M)
-//class Google : FakeSignature() {
-//
-//    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-//        super.onCreate(savedInstanceState, persistentState)
-//        main(1)
-//    }
-//}
 
 /**
  ***************************************************************************************************
