@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -77,12 +78,14 @@ import com.kongzue.baseframework.BaseActivity
 import com.kongzue.baseframework.BaseApp
 import com.kongzue.baseframework.BaseFragment
 import com.kongzue.baseframework.interfaces.GlobalLifeCircleListener
+import com.kongzue.baseframework.interfaces.OnBugReportListener
 import com.kongzue.baseframework.util.AppManager
 import com.kongzue.baseframework.util.JumpParameter
 import com.kongzue.dialogx.DialogX
 import com.kongzue.dialogxmaterialyou.style.MaterialYouStyle
 import io.androntainer.databinding.*
 import kotlinx.coroutines.Runnable
+import java.io.File
 import kotlin.math.hypot
 
 
@@ -98,9 +101,38 @@ abstract class AndrontainerApplication : BaseApp<Androntainer>() {
 
     override fun init() {
         setOnSDKInitializedCallBack {
-            log("SDK已加载完毕")
-            toast("SDK已加载完毕")
+            log("The SDK has been loaded")
+            NotificationCompat.Builder(context, "")
+                .setSmallIcon(R.drawable.ic_baseline_science_24)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText("The SDK has been loaded")
+                .priority = NotificationCompat.PRIORITY_DEFAULT
+
         }
+        setOnCrashListener(object : OnBugReportListener() {
+            override fun onCrash(e: Exception, crashLogFile: File): Boolean {
+                if (AppManager.getInstance().activeActivity == null || !AppManager.getInstance().activeActivity.isActive) {
+                    return false
+                }
+
+
+                val builder = AlertDialog.Builder(AppManager.getInstance().activeActivity)
+                builder.setTitle("Ops！发生了一次崩溃！")
+                builder.setMessage("您是否愿意帮助我们改进程序以修复此Bug？")
+                builder.setPositiveButton("愿意") { _, _ ->
+                    val url = crashLogFile.absolutePath
+                    toast("我真的会谢")
+                }
+                builder.setNegativeButton("不了") { _, _ ->
+                    toast("抱歉打扰了")
+                }
+                builder.setCancelable(false)
+                val dialog = builder.create()
+                dialog.show()
+
+                return false
+            }
+        })
     }
 
     override fun initSDKs() {
@@ -265,12 +297,11 @@ class MainActivity : AndrontainerActivity() {
     private lateinit var logo: AppCompatImageView
     private lateinit var greeting: ComposeView
     private lateinit var layout: LinearLayoutCompat
+    private var androidVersion: String = "unknown"
 
     private var targetAppName: String by mutableStateOf("unknown")
     private var targetPackageName: String by mutableStateOf("unknown")
     private var targetDescription: String by mutableStateOf("unknown")
-
-    private var androidVersion: String = "unknown"
 
     override fun initView() {
         toolbar = MaterialToolbar(
@@ -399,7 +430,7 @@ class MainActivity : AndrontainerActivity() {
      */
 
     override fun initServices() {
-        val intent = Intent(thisContext, InAppBillingService::class.java)
+        val intent = Intent(thisContext, InAppBillingService().javaClass)
         startService(intent)
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
     }
@@ -430,11 +461,10 @@ class MainActivity : AndrontainerActivity() {
     }
 
     /**
-     * Loading App Ui
+     * Loading ComposeView layout
      */
 
     override fun initUi() {
-        // ComposeView layout
         greeting.apply {
             setContent {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -457,8 +487,6 @@ class MainActivity : AndrontainerActivity() {
                 }
             }
         }
-
-
     }
 
     override fun setEvent() {
@@ -564,7 +592,7 @@ class MainActivity : AndrontainerActivity() {
 
     @Preview(showBackground = true)
     @Composable
-    fun ActivityMainPreview() {
+    private fun ActivityMainPreview() {
         AndrontainerTheme {
             Layout()
         }
@@ -601,16 +629,14 @@ class MainActivity : AndrontainerActivity() {
 
 }
 
+class Google : LibraryActivity() {
 
-@RequiresApi(Build.VERSION_CODES.M)
-open class FakeSignature : AppCompatActivity() {
-    protected fun main(code: Int) {
-        if (check(this@FakeSignature)) {
-            setResult(RESULT_OK)
-        } else {
-            requires(this@FakeSignature, code)
-        }
-        finish()
+    override fun create() {
+        main(3)
+    }
+
+    override fun data(parameter: JumpParameter?) {
+
     }
 
     override fun onRequestPermissionsResult(
@@ -625,14 +651,29 @@ open class FakeSignature : AppCompatActivity() {
         }
     }
 
+    private fun main(code: Int) {
+        if (check(thisContext)) {
+            setResult(RESULT_OK)
+        } else {
+            requires(thisContext, code)
+        }
+        finish()
+    }
+
     companion object {
 
         fun check(activity: AppCompatActivity): Boolean {
-            return activity.checkSelfPermission("android.permission.FAKE_PACKAGE_SIGNATURE") == PackageManager.PERMISSION_GRANTED
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                activity.checkSelfPermission("android.permission.FAKE_PACKAGE_SIGNATURE") == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
         }
 
         fun requires(activity: AppCompatActivity, code: Int) {
-            activity.requestPermissions(arrayOf("android.permission.FAKE_PACKAGE_SIGNATURE"), code)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                activity.requestPermissions(arrayOf("android.permission.FAKE_PACKAGE_SIGNATURE"), code)
+            }
         }
     }
 }
@@ -679,8 +720,9 @@ class FixedPlay : LibraryActivity() {
                 }
             }
         } else {
-            val intent = Intent(thisContext, FixedSettings().javaClass)
-            startActivity(intent)
+            jump(FixedSettings().javaClass)
+            //val intent = Intent(thisContext, FixedSettings().javaClass)
+            //startActivity(intent)
         }
     }
 }
@@ -850,17 +892,14 @@ class SelectOne : AppCompatActivity() {
         progressBar = binding.progressBar
         val intent = intent
         val bundle = intent.extras
+
         _mode = bundle?.getString("_mode")
         _uri = bundle?.getString("_uri")
         Thread {
             loadAllApps(makeIntent())
             val itemAdapter = ItemAdapter(this@SelectOne, R.layout.item_applist, list)
-            try {
-                itemAdapter.setMode(_mode!!)
-                itemAdapter.setUri(_uri!!)
-            } catch (e: Exception) {
-
-            }
+            itemAdapter.setMode(_mode!!)
+            itemAdapter.setUri(_uri!!)
             runOnUiThread {
                 listView = binding.listview
                 listView!!.adapter = itemAdapter
@@ -916,14 +955,14 @@ class SelectOne : AppCompatActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.M)
-class Google : FakeSignature() {
-
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-        main(1)
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.M)
+//class Google : FakeSignature() {
+//
+//    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+//        super.onCreate(savedInstanceState, persistentState)
+//        main(1)
+//    }
+//}
 
 /**
  ***************************************************************************************************
