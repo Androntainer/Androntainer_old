@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:id="@+id/content_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardElevation="5.0dip">
+
+                <Switch
+                    android:id="@+id/switch_status"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10.0dip"
+                    android:text="@string/status"
+                    android:textSize="17.0sp"
+                    tools:ignore="UseSwitchCompatOrMaterialXml,TouchTargetSizeCheck,TouchTargetSizeCheck" />
+
+            </androidx.cardview.widget.CardView>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/shizuku"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10.0dip"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="5.0dip">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            tools:ignore="UseCompoundDrawables">
+
+                            <ImageView
+                                android:id="@+id/imageView_status"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@color/darker_green"
+                                android:contentDescription="@string/todo"
+                                android:paddingTop="10.0dip"
+                                android:paddingBottom="10.0dip"
+                                app:srcCompat="@drawable/ic_baseline_check_circle_24"
+                                tools:ignore="ImageContrastCheck,ImageContrastCheck" />
+
+                            <TextView
+                                android:id="@+id/textView_status"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10.0dip"
+                                android:layout_marginBottom="10.0dip"
+                                android:gravity="center"
+                                android:text="@string/framework_active"
+                                android:textColor="@color/darker_green"
+                                android:textStyle="bold"
+                                tools:ignore="TextContrastCheck" />
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/module_page"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10.0dip"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="5.0dip">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/install_title_background"
+                                android:padding="5.0dip"
+                                android:text="@string/module"
+                                android:textColor="#616161"
+                                android:textSize="15.0sp" />
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="10.0dip">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentTop="true"
+                                    android:text="@string/module"
+                                    android:textColor="@color/app_background_black"
+                                    android:textSize="17.0sp"
+                                    tools:ignore="RelativeOverlap" />
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="20dp"
+                                    android:layout_alignParentEnd="true"
+                                    android:contentDescription="@string/todo"
+                                    app:srcCompat="@drawable/ic_baseline_open_in_new_24" />
+
+                            </RelativeLayout>
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/apps_page"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10.0dip"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="5.0dip">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@color/install_title_background"
+                                android:padding="5.0dip"
+                                android:text="应用"
+                                android:textColor="@color/install_title"
+                                android:textSize="15.0sp"
+                                tools:ignore="TextContrastCheck,TextContrastCheck" />
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="10.0dip">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentTop="true"
+                                    android:text="应用"
+                                    android:textColor="@color/app_background_black"
+                                    android:textSize="17.0sp"
+                                    tools:ignore="RelativeOverlap" />
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="20dp"
+                                    android:layout_alignParentEnd="true"
+                                    android:contentDescription="@string/todo"
+                                    app:srcCompat="@drawable/ic_baseline_open_in_new_24" />
+
+                            </RelativeLayout>
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/device"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="10.0dip"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        app:cardCornerRadius="10dp"
+                        app:cardElevation="5.0dip">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="5.0dip"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/text_yourDevice"
+                                android:textAllCaps="true"
+                                android:textSize="14.0sp"
+                                android:textStyle="bold" />
+
+                            <LinearLayout
+                                android:id="@+id/linearLayout_device"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10.0dip"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:id="@+id/relativeLayout_android"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="5.0dip"
+                                    tools:ignore="UseCompoundDrawables">
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/todo"
+                                        app:srcCompat="@drawable/ic_baseline_android_24"
+                                        tools:ignore="TooDeepLayout" />
+
+                                    <TextView
+                                        android:id="@+id/android_version"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/unknown"
+                                        android:textAllCaps="false"
+                                        android:textSize="17.0sp" />
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/relativeLayout_device"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="5.0dip"
+                                    tools:ignore="UseCompoundDrawables">
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/todo"
+                                        app:srcCompat="@drawable/ic_baseline_phone_24" />
+
+                                    <TextView
+                                        android:id="@+id/ic_manufacturer"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/unknown"
+                                        android:textSize="17.0sp" />
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/relativeLayout_cpu"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_margin="5.0dip"
+                                    tools:ignore="UseCompoundDrawables">
+
+                                    <ImageView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:contentDescription="@string/todo"
+                                        app:srcCompat="@drawable/ic_baseline_chip_24" />
+
+                                    <TextView
+                                        android:id="@+id/cpu"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text="@string/unknown"
+                                        android:textSize="17.0sp" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
